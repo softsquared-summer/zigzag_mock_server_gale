@@ -6,6 +6,11 @@ const JWT_SECRET_KEY = "TEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEY
 $res = (Object)Array();
 header('Content-Type: json');
 $req = json_decode(file_get_contents("php://input"));
+
+$who = 'cmg4739@gmail.com';
+$title = 'error_zigzag';
+$option_value = 'From: justin4739@naver.com\r\n';
+
 try {
     addAccessLogs($accessLogs, $req);
     switch ($handler) {
@@ -39,7 +44,7 @@ try {
         /*
      * API No. 1
      * API Name : 회원가입 API(재가입 가능)
-     * 마지막 수정 날짜 : 20.04.15
+     * 마지막 수정 날짜 : 20.04.30
      */
         case "createUser":
             http_response_code(200);
@@ -115,13 +120,22 @@ try {
                 }
             }
 
-            //중복되는 로그인 아이디인지 확인
+            //중복되는 핸드폰 번호인지 확인
             if(isExistPhone($phone)){
                 $res->is_success = FALSE;
                 $res->code = 201;
                 $res->message = "이미 등록된 핸드폰 번호입니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
+
+                //핸드폰 번호 길이 다를 경우 로그인 못 함
+                if(strlen($phone) != 11){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 형식의 핸드폰 번호입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
             }
 
             $res->result = createUser($email, $password, $phone);
@@ -134,7 +148,7 @@ try {
         /*
          * API No. 2
          * API Name : JWT 생성 테스트 API (로그인)
-         * 마지막 수정 날짜 : 19.04.25
+         * 마지막 수정 날짜 : 19.04.30
          */
         case "createJwt":
             // jwt 유효성 검사
@@ -147,6 +161,7 @@ try {
                 $res->is_success = FALSE;
                 $res->code = 100;
                 $res->message = "유효하지 않은 아이디 입니다";
+                mail($who,$title,$res->message,$option_value);
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
@@ -157,6 +172,58 @@ try {
             $res->is_success = TRUE;
             $res->code = 100;
             $res->message = "테스트 성공";
+            mail($who,$title,$res->message,$option_value);
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+     * API No. 3
+     * API Name : 회원탈퇴 API(유저 삭제)
+     * 마지막 수정 날짜 : 20.05.2
+     */
+        case "deleteUser":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            //$user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+
+            $res->result = deleteUser($email);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "회원탈퇴가 완료되었습니다.";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 

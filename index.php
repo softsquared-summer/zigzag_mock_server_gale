@@ -14,19 +14,33 @@ ini_set('default_charset', 'utf8mb4');
 
 //Main Server API
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
-    /* ******************   Test   ****************** */
+    /* ******************   MainController   ****************** */
     //1. 회원가입 API
     $r->addRoute('POST', '/user', ['MainController', 'createUser']);
 
     //2. 로그인 API
     $r->addRoute('POST', '/login', ['MainController', 'createJwt']);
 
+    //3. 회원탈퇴 API
+    $r->addRoute('DELETE', '/user', ['MainController', 'deleteUser']);
+
+    /* ******************   IndexController   ****************** */
+
+    //1. 아이템 리스트 조회 API
+    $r->addRoute('GET', '/items', ['IndexController', 'getItems']);
+
+    //2. 아이템 상세 조회 API
+    $r->addRoute('GET', '/items/{itemID}', ['IndexController', 'getItemDetail']);
+
+    //3. 아이템 색깔 조회 API
+    $r->addRoute('GET', '/items/{itemID}/colors', ['IndexController', 'getItemColors']);
+
     //test sample
-    $r->addRoute('GET', '/', ['IndexController', 'index']);
-    $r->addRoute('GET', '/test', ['IndexController', 'test']);
-    $r->addRoute('GET', '/test/{testNo}', ['IndexController', 'testDetail']);
-    $r->addRoute('POST', '/test', ['IndexController', 'testPost']);
-    $r->addRoute('GET', '/jwt', ['MainController', 'validateJwt']);
+//    $r->addRoute('GET', '/', ['IndexController', 'index']);
+//    $r->addRoute('GET', '/test', ['IndexController', 'test']);
+//    $r->addRoute('GET', '/test/{testNo}', ['IndexController', 'testDetail']);
+//    $r->addRoute('POST', '/test', ['IndexController', 'testPost']);
+//    $r->addRoute('GET', '/jwt', ['MainController', 'validateJwt']);
 
     
 
