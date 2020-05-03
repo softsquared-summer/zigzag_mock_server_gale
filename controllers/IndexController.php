@@ -68,14 +68,14 @@ try {
 
             //쿼리스트링으로 가져온 값 읽기
 
-            $keyword_input = "default"; //검색어 있으면 제목에서 찾기, 없으면 전체 조회
+            $keyword_input = "Item.id != -1"; //검색어 있으면 제목에서 찾기, 없으면 전체 조회
             if(empty($_GET["keyword"])){
-                $keyword_input = "where Item.id != -1";
+                $keyword_input = "Item.id != -1";
             }
             else{
                 $keyword = $_GET["keyword"];
                 if(nl2br(gettype($keyword)) == "string"){
-                    $keyword_input = "where Item.name = "."%".$keyword."%";
+                    $keyword_input = "Item.name like "."'%".$keyword."%'";
                 }
                 else{
                     $res->is_success = FALSE;
@@ -86,18 +86,42 @@ try {
                 }
             }
 
-            $category_input = "default"; //카테고리 없으면 전체 조회, 큰 것만 있으면 큰 카테고리, 큰 거 작은거 둘 다 있으면 작은 카테고리
+            $category_input = " item_category.category_code != -1"; //카테고리 없으면 전체 조회, 큰 것만 있으면 큰 카테고리, 큰 거 작은거 둘 다 있으면 작은 카테고리
             if(empty($_GET["category"]) and empty($_GET["category_detail"])){
-                $category_input = " and item_category.category_code != -1";
+                $category_input = " item_category.category_code != -1";
             }
             else if(!empty($_GET["category"]) and empty($_GET["category_detail"])) {
-                $category = $_GET["category"];
+                if(isExistCategory($_GET["category"])){
+                    $category = $_GET["category"];
+                }else{
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.(category)";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
                 $category_code = categoryTextToCode($category);
-                $category_input = " and item_category.category_code = ".$category_code;
+                $category_input = " item_category.category_code = ".$category_code;
             }
             else if(!empty($_GET["category"]) and !empty($_GET["category_detail"])){
-                $category = $_GET["category"];
-                $category_detail = $_GET["category_detail"];
+                if(isExistCategory($_GET["category"])){
+                    $category = $_GET["category"];
+                }else{
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.(category)";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                if(isExistCategoryDetail($_GET["category_detail"])){
+                    $category_detail = $_GET["category_detail"];
+                }else{
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.(category)";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
                 $category_detail_code = categoryDetailTextToCode($category_detail);
                     if(!isSameCategory(categoryTextToCode($category), categoryDetailTextToCode($category_detail))){
                         $res->is_success = FALSE;
@@ -106,7 +130,7 @@ try {
                         echo json_encode($res, JSON_NUMERIC_CHECK);
                         return;
                     }
-                    $category_input = " and item_category.category_detail_code = ".$category_detail_code;
+                    $category_input = " item_category.category_detail_code = ".$category_detail_code;
             }
             else{
                 $res->is_success = FALSE;
@@ -117,14 +141,14 @@ try {
             }
 
 
-            $ship_input = "default"; // ship = free가 아니면 접근 금지.
+            $ship_input = " Mall.Shipment != -1"; // ship = free가 아니면 접근 금지.
             if(empty($_GET["ship"])){
-                $ship_input = " and Mall.Shipment != -1";
+                $ship_input = " Mall.Shipment != -1";
             }
             else{
                 $ship = $_GET["ship"];
                 if($ship == 'free'){
-                    $ship_input = " and Mall.Shipment = 0";
+                    $ship_input = " Mall.Shipment = 0";
                 }
                 else{
                     $res->is_success = FALSE;
@@ -135,14 +159,14 @@ try {
                 }
             }
 
-            $filter_input = "default"; //filter가 low면 저가순, high면 고가순, 없으면 랜덤, 그 외에는 접근 금지
+            $filter_input = "order by rand();"; //filter가 low면 저가순, high면 고가순, 없으면 랜덤, 그 외에는 접근 금지
             if(empty($_GET["filter"])){
-                $filter_input = "order by rand();";
+                $filter_input == "order by rand();";
             }
-            else if($_GET["filter"] = "low"){
+            else if($_GET["filter"] == "low"){
                 $filter_input = "order by price asc;";
             }
-            else if($_GET["filter"] = "high"){
+            else if($_GET["filter"] == "high"){
                 $filter_input = "order by price desc;";
             }
             else{

@@ -112,8 +112,9 @@ on Heart.item_id = Item.id
 
 left join User
 on User.id = Heart.user_id";
-    
-    $query = $query_body." ".$keyword_input.$category_input.$ship_input." ".$filter_input;
+
+    $query = $query_body." where ".$keyword_input." and ".$category_input." and ".$ship_input." ".$filter_input;
+    echo $query;
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$user_id]);
@@ -822,6 +823,41 @@ function isExistItem($item_id){
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//기존에 있는 카테고리인지 판단
+function isExistCategory($text){
+    $temp = categoryTextToCode($text);
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM item_category where category_code = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$temp]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+function isExistCategoryDetail($text){
+    $temp = categoryDetailTextToCode($text);
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM item_category where category_detail_code = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$temp]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
