@@ -119,12 +119,12 @@ try {
 
             $ship_input = "default"; // ship = free가 아니면 접근 금지.
             if(empty($_GET["ship"])){
-                $ship_input = " and Item.Shipment != -1";
+                $ship_input = " and Mall.Shipment != -1";
             }
             else{
                 $ship = $_GET["ship"];
                 if($ship == 'free'){
-                    $ship_input = " and Item.Shipment = 0";
+                    $ship_input = " and Mall.Shipment = 0";
                 }
                 else{
                     $res->is_success = FALSE;

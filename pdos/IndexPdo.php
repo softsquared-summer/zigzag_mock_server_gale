@@ -49,28 +49,28 @@ Item.id as item_id,
 
 (
     case
-        when  item_category.category_code = 100 then \"아우터\"
-        when  item_category.category_code = 200 then \"상의\"
-        when  item_category.category_code = 300 then \"원피스/세트\"
-        when  item_category.category_code = 400 then \"바지\"
+        when  item_category.category_code = 100 then '아우터'
+        when  item_category.category_code = 200 then '상의'
+        when  item_category.category_code = 300 then '원피스/세트'
+        when  item_category.category_code = 400 then '바지'
     end
 )
 as item_category,
 
 (
     case
-        when  item_category.category_detail_code = 101 then \"가디건\"
-        when  item_category.category_detail_code = 102 then \"자켓\"
-        when  item_category.category_detail_code = 103 then \"코트\"
-        when  item_category.category_detail_code = 201 then \"티셔츠\"
-        when  item_category.category_detail_code = 202 then \"블라우스\"
-        when  item_category.category_detail_code = 203 then \"셔츠/남방\"
-        when  item_category.category_detail_code = 301 then \"미니원피스\"
-        when  item_category.category_detail_code = 302 then \"미디원피스\"
-        when  item_category.category_detail_code = 303 then \"롱원피스\"
-        when  item_category.category_detail_code = 401 then \"일자바지\"
-        when  item_category.category_detail_code = 402 then \"슬랙스팬츠\"
-        when  item_category.category_detail_code = 403 then \"반바지\"
+        when  item_category.category_detail_code = 101 then '가디건'
+        when  item_category.category_detail_code = 102 then '자켓'
+        when  item_category.category_detail_code = 103 then '코트'
+        when  item_category.category_detail_code = 201 then '티셔츠'
+        when  item_category.category_detail_code = 202 then '블라우스'
+        when  item_category.category_detail_code = 203 then '셔츠/남방'
+        when  item_category.category_detail_code = 301 then '미니원피스'
+        when  item_category.category_detail_code = 302 then '미디원피스'
+        when  item_category.category_detail_code = 303 then '롱원피스'
+        when  item_category.category_detail_code = 401 then '일자바지'
+        when  item_category.category_detail_code = 402 then '슬랙스팬츠'
+        when  item_category.category_detail_code = 403 then '반바지'
     end
 )
 as item_category_detail,
@@ -78,7 +78,7 @@ as item_category_detail,
 ' ' as image,
 
 if(
-    Item.Shipment = 0,
+    Mall.shipment = 0,
     'Y',
     'N'
     )
@@ -112,7 +112,7 @@ on Heart.item_id = Item.id
 
 left join User
 on User.id = Heart.user_id";
-
+    
     $query = $query_body." ".$keyword_input.$category_input.$ship_input." ".$filter_input;
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -126,7 +126,8 @@ on User.id = Heart.user_id";
         $item_id[$i] = $res_body[$i]['item_id'];
     }
 
-    $query_image = "select image_url from item_image
+    $query_image = "
+select image_url from item_image
 
 inner join Item on Item.id = item_image.item_id
 
