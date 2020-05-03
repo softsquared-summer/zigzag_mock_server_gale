@@ -227,6 +227,20 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
+        /*
+* API No. 4
+* API Name : Order 리셋 API
+* 마지막 수정 날짜 : 20.05.3
+*/
+        case "reset":
+            http_response_code(200);
+            $res->result = order_reset();
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "Order 리셋 완료";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
     }
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);

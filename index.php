@@ -24,6 +24,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     //3. 회원탈퇴 API
     $r->addRoute('DELETE', '/user', ['MainController', 'deleteUser']);
 
+    //4. Order 리셋 API
+    $r->addRoute('DELETE', '/reset', ['MainController', 'reset']);
+
     /* ******************   IndexController   ****************** */
 
     //1. 아이템 리스트 조회 API
@@ -34,6 +37,33 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     //3. 아이템 색깔 조회 API
     $r->addRoute('GET', '/items/{itemID}/colors', ['IndexController', 'getItemColors']);
+
+    //4. 아이템 사이즈 조회 API
+    $r->addRoute('GET', '/items/{itemID}/sizes', ['IndexController', 'getItemSizes']);
+
+    //5. 아이템 리뷰 총평 조회 API
+    $r->addRoute('GET', '/items/{itemID}/summary', ['IndexController', 'getItemSummary']);
+
+    //6. 아이템 리뷰 리스트 조회 API
+    $r->addRoute('GET', '/items/{itemID}/comments', ['IndexController', 'getItemComments']);
+
+    //7. 아이템 리뷰 작성 API
+    $r->addRoute('POST', '/comment', ['IndexController', 'postComment']);
+
+    //8. 아이템 리뷰 삭제 API
+    $r->addRoute('DELETE', '/comment', ['IndexController', 'deleteComment']);
+
+    //19. 장바구니 추가 API
+    $r->addRoute('POST', '/basket', ['IndexController', 'postBasket']);
+
+    //19-1. 직접구매 API
+    $r->addRoute('POST', '/order', ['IndexController', 'postOrder']);
+
+    //20. 장바구니 아이템 리스트 조회 API
+    $r->addRoute('GET', '/baskets', ['IndexController', 'getBaskets']);
+
+    //21. 장바구니 아이템 삭제 API
+    $r->addRoute('DELETE', '/basket', ['IndexController', 'deleteBaskets']);
 
     //test sample
 //    $r->addRoute('GET', '/', ['IndexController', 'index']);

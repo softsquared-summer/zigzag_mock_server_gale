@@ -11,12 +11,11 @@ function createUser($email, $password, $phone){
     //    $st->execute([$param,$param]);
     $st->execute([$email, $password, $phone]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
 
     $st=null;
     $pdo = null;
 
-    return $res;
+    return;
 }
 
 //회원 탈퇴
@@ -29,12 +28,11 @@ function deleteUser($email){
     //    $st->execute([$param,$param]);
     $st->execute([$email]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
 
     $st=null;
     $pdo = null;
 
-    return $res;
+    return;
 }
 
 //index controller
@@ -47,7 +45,7 @@ function getItems($user_id, $keyword_input, $category_input, $ship_input, $filte
     $query_body = "
 select
 
-Item.id as id,
+Item.id as item_id,
 
 (
     case
@@ -77,6 +75,8 @@ as item_category,
 )
 as item_category_detail,
 
+' ' as image,
+
 if(
     Item.Shipment = 0,
     'Y',
@@ -105,7 +105,7 @@ inner join Mall
 on Item.mall_id = Mall.id
 
 inner join item_category
-on item_category.item_id = Item.id
+on item_category.id = Item.id
 
 left join Heart
 on Heart.item_id = Item.id
@@ -118,7 +118,32 @@ on User.id = Heart.user_id";
     //    $st->execute([$param,$param]);
     $st->execute([$user_id]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
+    $res_body = $st->fetchAll();
+
+    $item_id[] = (Object)Array();
+
+    for($i = 0; $i<count($res_body); $i++){
+        $item_id[$i] = $res_body[$i]['item_id'];
+    }
+
+    $query_image = "select image_url from item_image
+
+inner join Item on Item.id = item_image.item_id
+
+where Item.id = ?;";
+
+
+    $st2 = $pdo->prepare($query_image);
+    //    $st->execute([$param,$param]);
+
+    for($i = 0; $i<count($res_body); $i++){
+        $st2->execute([$item_id[$i]]);
+        $st2->setFetchMode(PDO::FETCH_ASSOC);
+        $res_image = $st2->fetchAll();
+        $res_body[$i]["image"] = $res_image;
+    }
+
+    $res = $res_body;
 
     $st=null;
     $pdo = null;
@@ -137,7 +162,7 @@ Item.id as id,
 
 Mall.name as mall_name,
 
-' ' as image_url,
+' ' as image,
 
 Item.name as item_name,
 
@@ -208,7 +233,7 @@ where Item.id = ?;";
     $st2->setFetchMode(PDO::FETCH_ASSOC);
     $res_image = $st2->fetchAll();
 
-    $res_body[0]["image_url"] = $res_image;
+    $res_body[0]["image"] = $res_image;
     $res = $res_body;
 
 
@@ -219,13 +244,35 @@ where Item.id = ?;";
 }
 
 //아이템 색깔 리스트 조회 API
-function getItemColors($user_id, $item_id)
+function getItemColors($item_id)
 {
     $pdo = pdoSqlConnect();
-    $query = "SELECT * FROM Test WHERE no = ?;";
+    $query = "select
+Item.id as item_id,
+ifnull(
+    color1,
+    \"없음\"
+    ) as color1,
+
+ifnull(
+    color2,
+    \"없음\"
+    ) as color2,
+
+ifnull(
+    color3,
+    \"없음\"
+    ) as color3
+
+from item_color
+
+inner join Item
+on item_color.id = Item.id
+
+where item_color.id = ?;";
 
     $st = $pdo->prepare($query);
-    $st->execute([$user_id, $item_id]);
+    $st->execute([$item_id]);
     //    $st->execute();
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
@@ -236,6 +283,496 @@ function getItemColors($user_id, $item_id)
     return $res;
 }
 
+//아이템 색깔 리스트 조회 API
+function getItemSizes($item_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select
+Item.id as item_id,
+ifnull(
+    size1,
+    \"없음\"
+    ) as color1,
+
+ifnull(
+    size2,
+    \"없음\"
+    ) as color2,
+
+ifnull(
+    size3,
+    \"없음\"
+    ) as color3
+
+from item_size
+
+inner join Item
+on item_size.id = Item.id
+
+where item_size.id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$item_id]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//아이템 리뷰 총평 조회 API
+function getItemSummary($item_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select
+
+Item.id as item_id,
+avg(Comment.score) as score,
+
+if(
+    count(if(comment_summary.size=1,1,null)) / count(comment_summary.size) * 100 >= 50,
+    '딱 맞아요',
+    if(
+        count(if(comment_summary.size=2,1,null)) / count(comment_summary.size) * 100 >= 50,
+        '작게 나왔어요',
+        '크게 나왔어요'
+        )
+    ) as size,
+
+if(
+    count(if(comment_summary.size=1,1,null)) / count(comment_summary.size) * 100 >= 50,
+    concat(round(count(if(comment_summary.size=1,1,null)) / count(comment_summary.size) * 100),'%'),
+    if(
+        count(if(comment_summary.size=2,1,null)) / count(comment_summary.size) * 100 >= 50,
+        concat(round(count(if(comment_summary.size=2,1,null)) / count(comment_summary.size) * 100),'%'),
+        concat(round(count(if(comment_summary.size=3,1,null)) / count(comment_summary.size) * 100),'%')
+        )
+    ) as size_rate,
+
+if(
+    count(if(comment_summary.color=1,1,null)) / count(comment_summary.color) * 100 >= 50,
+    '화면과 같아요',
+    if(
+        count(if(comment_summary.color=2,1,null)) / count(comment_summary.color) * 100 >= 50,
+        '밝아요',
+        '어두워요'
+        )
+    ) as color,
+
+if(
+    count(if(comment_summary.color=1,1,null)) / count(comment_summary.color) * 100 >= 50,
+    concat(round(count(if(comment_summary.color=1,1,null)) / count(comment_summary.color) * 100),'%'),
+    if(
+        count(if(comment_summary.color=2,1,null)) / count(comment_summary.color) * 100 >= 50,
+        concat(round(count(if(comment_summary.color=2,1,null)) / count(comment_summary.color) * 100),'%'),
+        concat(round(count(if(comment_summary.color=3,1,null)) / count(comment_summary.color) * 100),'%')
+        )
+    ) as color_rate,
+
+if(
+    count(if(comment_summary.finish=1,1,null)) / count(comment_summary.finish) * 100 >= 50,
+    '아주 좋아요',
+    if(
+        count(if(comment_summary.finish=2,1,null)) / count(comment_summary.finish) * 100 >= 50,
+        '괜찮아요',
+        '별로에요'
+        )
+    ) as finish,
+
+if(
+    count(if(comment_summary.finish=1,1,null)) / count(comment_summary.finish) * 100 >= 50,
+    concat(round(count(if(comment_summary.finish=1,1,null)) / count(comment_summary.finish) * 100),'%'),
+    if(
+        count(if(comment_summary.finish=2,1,null)) / count(comment_summary.finish) * 100 >= 50,
+        concat(round(count(if(comment_summary.finish=2,1,null)) / count(comment_summary.finish) * 100),'%'),
+        concat(round(count(if(comment_summary.finish=3,1,null)) / count(comment_summary.finish) * 100),'%')
+        )
+    ) as finish_rate
+
+from Item
+
+inner join Comment
+on Comment.item_id = Item.id
+
+inner join comment_summary
+on comment_summary.id = Comment.id
+
+where Item.id = ?
+
+order by Comment.id desc;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$item_id]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//아이템 리뷰 리스트 조회 API
+function getItemComments($item_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+
+Item.id as item_id,
+Comment.id as comment_id,
+concat(left(User.email,2),'**') as email,
+Comment.score as score,
+
+concat(
+    if(year(Comment.create_at)<10,
+        concat(0,year(Comment.create_at)),
+        year(Comment.create_at)
+        ),
+    '-',
+    if(month(Comment.create_at)<10,
+        concat(0,month(Comment.create_at)),
+        month(Comment.create_at)
+        ),
+    '-',
+    if(day(Comment.create_at)<10,
+        concat(0,day(Comment.create_at)),
+        day(Comment.create_at)
+        )
+    )  as date,
+
+comment_option.color as color,
+comment_option.size as size,
+
+case
+    when comment_summary.size = 1
+    then '딱 맞아요'
+    when comment_summary.size = 2
+    then '작게 나왔어요'
+    when comment_summary.size = 3
+    then '크게 나왔어요'
+    else '잘못된 입력'
+    end as size_summary,
+
+case
+    when comment_summary.color = 1
+    then '화면과 같아요'
+    when comment_summary.color = 2
+    then '밝아요'
+    when comment_summary.color = 3
+    then '어두워요'
+    else '잘못된 입력'
+    end as color_summary,
+
+case
+    when comment_summary.finish = 1
+    then '아주 좋아요'
+    when comment_summary.finish = 2
+    then '괜찮아요'
+    when comment_summary.finish = 3
+    then '별로에요'
+    else '잘못된 입력'
+    end as finish_summary,
+
+Comment.text as comment,
+ifnull(comment_image.image_url,'없음') as image_url
+
+
+from Item
+
+inner join Comment
+on Comment.item_id = Item.id
+
+inner join User
+on Comment.user_id = User.id
+
+left join comment_image
+on comment_image.id = Comment.id
+
+inner join comment_summary
+on comment_summary.id = Comment.id
+
+inner join comment_option
+on comment_option.id = Comment.id
+
+where Item.id = ?
+
+order by Comment.id desc;
+";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$item_id]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//자신이 구매한 아이템 리뷰 리스트 조회 API
+function getItemCommentsMyself($user_id, $item_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+
+Item.id as item_id,
+Comment.id as comment_id,
+concat(left(User.email,2),'**') as email,
+Comment.score as score,
+
+concat(
+    if(year(Comment.create_at)<10,
+        concat(0,year(Comment.create_at)),
+        year(Comment.create_at)
+        ),
+    '-',
+    if(month(Comment.create_at)<10,
+        concat(0,month(Comment.create_at)),
+        month(Comment.create_at)
+        ),
+    '-',
+    if(day(Comment.create_at)<10,
+        concat(0,day(Comment.create_at)),
+        day(Comment.create_at)
+        )
+    )  as date,
+
+comment_option.color as color,
+comment_option.size as size,
+
+case
+    when comment_summary.size = 1
+    then '딱 맞아요'
+    when comment_summary.size = 2
+    then '작게 나왔어요'
+    when comment_summary.size = 3
+    then '크게 나왔어요'
+    else '잘못된 입력'
+    end as size_summary,
+
+case
+    when comment_summary.color = 1
+    then '화면과 같아요'
+    when comment_summary.color = 2
+    then '밝아요'
+    when comment_summary.color = 3
+    then '어두워요'
+    else '잘못된 입력'
+    end as color_summary,
+
+case
+    when comment_summary.finish = 1
+    then '아주 좋아요'
+    when comment_summary.finish = 2
+    then '괜찮아요'
+    when comment_summary.finish = 3
+    then '별로에요'
+    else '잘못된 입력'
+    end as finish_summary,
+
+Comment.text as comment,
+ifnull(comment_image.image_url,'없음') as image_url
+
+
+from Item
+
+inner join Comment
+on Comment.item_id = Item.id
+
+inner join User
+on Comment.user_id = User.id
+
+left join comment_image
+on comment_image.id = Comment.id
+
+inner join comment_summary
+on comment_summary.id = Comment.id
+
+inner join comment_option
+on comment_option.id = Comment.id
+
+where Comment.user_id = ? and Item.id = ?
+
+order by Comment.id desc;
+";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item_id]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//리뷰 추가
+function postComment($user_id,$item_id,$score,$item_color,$item_size,$size,$color,$finish,$comment,$image_url)
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Comment (user_id, item_id, score, text) VALUES (?,?,?,?);
+              INSERT INTO comment_option (color, size) VALUES (?,?);
+              INSERT INTO comment_summary (size, color,finish) VALUES (?,?,?);
+              INSERT INTO comment_image (image_url) VALUES (?);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item_id,$score,$comment,$item_color,$item_size,$size,$color,$finish,$image_url]);
+
+    $st = null;
+    $pdo = null;
+}
+
+//리뷰 삭제
+function deleteComment($user_id, $comment_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Comment SET is_deleted = 'Y' where user_id = ? and id = ?;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $comment_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+
+    $st = null;
+    $pdo = null;
+
+    return;
+}
+
+//장바구니 추가
+function postBasket($user_id, $item_id, $size,$color,$num)
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Orders (user_id,item_id,size,color,num,is_basket ) VALUES (?,?,?,?,?,'Y');";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item_id,$size,$color,$num]);
+
+    $st = null;
+    $pdo = null;
+}
+
+//직접구매
+function postOrder($user_id, $item_id, $size,$color,$num)
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Orders (user_id,item_id,size,color,num,is_basket ) VALUES (?,?,?,?,?,'N');";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item_id,$size,$color,$num]);
+
+    $st = null;
+    $pdo = null;
+}
+
+//장바구니 아이템 리스트 조회
+function getBaskets($user_id)
+{
+    $pdo = pdoSqlConnect();
+    $query_num = "select count(id), ' ' as list from Orders
+                where Orders.user_id = ? and Orders.is_deleted = 'N' and Orders.is_purchased = 'N' and Orders.is_basket='Y';";
+
+    $st_num = $pdo->prepare($query_num);
+    //    $st->execute([$param,$param]);
+    $st_num->execute([$user_id]);
+    $st_num->setFetchMode(PDO::FETCH_ASSOC);
+    $res_num = $st_num->fetchAll();
+
+    $query_body = "select
+
+Item.id as item_id,
+
+Mall.name as mall_name,
+
+Item.name as item_name,
+
+' ' as image,
+
+Orders.size as size,
+
+Orders.color as color,
+
+Orders.num as num,
+
+concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price,
+
+Mall.shipment as ship
+
+from Orders
+
+inner join Item
+on Orders.item_id = Item.id
+
+inner join Mall
+on Item.mall_id = Mall.id
+
+where Orders.user_id = ? and Orders.is_deleted = 'N' and Orders.is_purchased = 'N' and Orders.is_basket='Y';
+";
+
+    $st_body = $pdo->prepare($query_body);
+    //    $st->execute([$param,$param]);
+    $st_body->execute([$user_id]);
+    $st_body->setFetchMode(PDO::FETCH_ASSOC);
+    $res_body = $st_body->fetchAll();
+
+    $item_id[] = (Object)Array();
+
+    for($i = 0; $i<count($res_body); $i++){
+        $item_id[$i] = $res_body[$i]['item_id'];
+    }
+
+    $query_image = "select image_url from item_image
+
+inner join Item on Item.id = item_image.item_id
+
+where Item.id = ?;";
+
+
+    $st2 = $pdo->prepare($query_image);
+    //    $st->execute([$param,$param]);
+
+    for($i = 0; $i<count($res_body); $i++){
+        $st2->execute([$item_id[$i]]);
+        $st2->setFetchMode(PDO::FETCH_ASSOC);
+        $res_image = $st2->fetchAll();
+        $res_body[$i]["image"] = $res_image;
+    }
+
+    $res_num[0]["list"] = $res_body;
+    $res = $res_num;
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//장바구니 삭제
+function deleteBaskets($user_id, $item_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Orders SET is_deleted = 'Y', is_basket = 'N' where user_id = ? and item_id = ?;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+
+    $st = null;
+    $pdo = null;
+
+    return;
+}
 //-----------------------조건식--------------------------//
 
 //기존에 있는 이메일인지 판단
@@ -274,7 +811,7 @@ function isExistPhone($phone){
     return intval($res[0]["exist"]);
 }
 
-//기존에 있는 번호인지 판단
+//기존에 있는 아이템인지 판단
 function isExistItem($item_id){
 
     $pdo = pdoSqlConnect();
@@ -284,6 +821,156 @@ function isExistItem($item_id){
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//기존에 있는 리뷰인지 판단
+function isExistComment($user_id,$comment_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Comment where user_id = ? and id = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$comment_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//상품에 존재하는 색깔인지 판단
+function isExistColor($item_id, $color){
+
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+
+if(
+    (item_color.color1 = ?
+    or item_color.color2 = ?
+    or item_color.color3 = ?),
+    1,
+    0
+    ) as exist
+
+from Item
+
+inner join item_color
+on Item.id = item_color.id
+
+where Item.id = ?;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$color,$color,$color,$item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//상품에 존재하는 사이즈인지 판단
+function isExistSize($item_id, $size){
+
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+
+if(
+    (item_size.size1 = ?
+    or item_size.size2 = ?
+    or item_size.size3 = ?),
+    1,
+    0
+    ) as exist
+
+from Item
+
+inner join item_size
+on Item.id = item_size.id
+
+where Item.id = ?;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$size,$size,$size,$item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//장바구니에 등록된 아이템이 맞는지
+function isExistItemOnOrders($user_id,$item_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Orders where Orders.user_id = ? and Orders.item_id = ?
+                and Orders.is_deleted = 'N' and Orders.is_purchased = 'N' and Orders.is_basket='Y') as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//유저가 산 아이템이 맞는지
+function isPurchaseUser($user_id,$item_id,$item_color,$item_size){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Orders where Orders.user_id = ? and Orders.item_id = ? 
+                and Orders.color = ? and Orders.size = ? and Orders.is_purchased = 'Y') as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$item_id,$item_color,$item_size]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//이미 리뷰를 작성했는지
+function isAlreayComment($user_id,$item_id,$item_color,$item_size){
+
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+
+exists(select * from Comment
+
+inner join comment_option
+on Comment.id = comment_option.id
+
+where Comment.user_id = ? and Comment.item_id = ? and Comment.is_deleted = 'N'
+  and comment_option.color = ? and comment_option.size = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$item_id,$item_color,$item_size]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -302,6 +989,24 @@ function isDeletedUser($email){
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$email]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//장바구니에서 삭제된 상품이 맞는지
+function isDeletedItemOnOrders($user_id, $item_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Orders where Orders.user_id = ? and Orders.item_id = ?
+                and Orders.is_deleted = 'Y' and Orders.is_purchased = 'N' and Orders.is_basket='N') as exist";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $item_id]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -345,6 +1050,23 @@ function isSameCategory($category, $category_detail){
 }
 
 // ------------------------보조 함수------------------------------
+//장바구니 리셋
+function order_reset(){
+
+    $pdo = pdoSqlConnect();
+
+    $query = "UPDATE Orders SET is_deleted = 'Y' where is_basket = 'N' and is_purchased = 'N';";
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+
+    $st=null;
+    $pdo = null;
+
+    return;
+}
+
 //삭제 유저 재가입 함수
 function recreateUser($email){
 
@@ -362,21 +1084,52 @@ function recreateUser($email){
     return;
 }
 
+//삭제 물품 재등록
+function recreateOrder($user_id, $item_id, $size,$color,$num)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Orders SET is_deleted = 'N', is_basket = 'N' 
+                where user_id = ? and item_id = ? and size = ? and color = ? and num = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item_id,$size,$color,$num]);
+
+    $st = null;
+    $pdo = null;
+
+}
+
+//장바구니 삭제 물품 재등록
+function recreateBasket($user_id, $item_id, $size,$color,$num)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Orders SET is_deleted = 'N', is_basket = 'Y' 
+                where user_id = ? and item_id = ? and size = ? and color = ? and num = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item_id,$size,$color,$num]);
+
+    $st = null;
+    $pdo = null;
+
+}
+
 //이메일을 id값으로 변환
 function EmailToID($email){
 
     $pdo = pdoSqlConnect();
 
-    $query = "select id from User where email = ?";
+    $query = "select User.id as exist from User where email = ?";
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$email]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
 
     $st=null;
     $pdo = null;
 
-    return;
+    return intval($res[0]["exist"]);
 }
 
 //세부 카테고리 텍스트 코드로 변환
