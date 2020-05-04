@@ -53,6 +53,12 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     //8. 아이템 리뷰 삭제 API
     $r->addRoute('DELETE', '/comment', ['IndexController', 'deleteComment']);
 
+    //9. 쇼핑몰 리스트 조회 API
+    $r->addRoute('GET', '/malls', ['IndexController', 'getMalls']);
+
+    //10. 쇼핑몰 상세 조회 API
+    $r->addRoute('GET', '/malls/{mallID}', ['IndexController', 'getMallDetail']);
+
     //11. 쇼핑몰 태그 설정 API
     $r->addRoute('POST', '/tag', ['IndexController', 'postTag']);
 
@@ -68,8 +74,14 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     //15. 찜하기 API
     $r->addRoute('POST', '/heart', ['IndexController', 'postHeart']);
 
+    //16. 찜한 아이템 개수 조회하기 API
+    $r->addRoute('GET', '/hearts', ['IndexController', 'getHearts']);
+
     //17. 즐겨찾기하기 API
     $r->addRoute('POST', '/favorite', ['IndexController', 'postFavorite']);
+
+    //18. 즐겨찾기한 쇼핑몰 개수 조회하기 API
+    $r->addRoute('GET', '/favorites', ['IndexController', 'getHearts']);
 
     //19. 장바구니 추가 API
     $r->addRoute('POST', '/basket', ['IndexController', 'postBasket']);

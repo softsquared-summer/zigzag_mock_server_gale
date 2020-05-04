@@ -147,7 +147,7 @@ where Item.id = ?;";
         $st2->execute([$item_id[$i]]);
         $st2->setFetchMode(PDO::FETCH_ASSOC);
         $res_image = $st2->fetchAll();
-        $res_body[$i]["image"] = $res_image;
+        $res_body[$i]["image"] = $res_image[0];
     }
 
     $res = $res_body;
@@ -290,7 +290,7 @@ where item_color.id = ?;";
     $st = null;
     $pdo = null;
 
-    return $res;
+    return $res[0];
 }
 
 //아이템 색깔 리스트 조회 API
@@ -330,7 +330,7 @@ where item_size.id = ?;";
     $st = null;
     $pdo = null;
 
-    return $res;
+    return $res[0];
 }
 
 //아이템 리뷰 총평 조회 API
@@ -423,7 +423,7 @@ order by Comment.id desc;";
     $st = null;
     $pdo = null;
 
-    return $res;
+    return $res[0];
 }
 
 //아이템 리뷰 리스트 조회 API
@@ -659,6 +659,309 @@ function deleteComment($user_id, $comment_id)
     return;
 }
 
+//쇼핑몰 리스트 조회 API
+function getMalls($user_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+
+Mall.id as mall_id,
+mall_image.image_url as image_url,
+if(
+    Favorite.user_id = ?,
+    'Y',
+    'N'
+    )
+as is_favorite,
+Mall.name as mall_name,
+(
+    SELECT COUNT(*) + 1 
+    FROM 
+    (
+        select
+        count(if(Favorite.mall_id = Mall.id,1,null)) as num,
+        ifnull(Mall.id,0) as mall_id
+        from Mall
+        left join Favorite
+        on Mall.id = Favorite.mall_id
+        group by Mall.id
+    )
+    mall_rank WHERE num > b.num
+) AS mall_rank,
+' ' as tags
+
+from (
+    select
+    count(if(Favorite.mall_id = Mall.id,1,null)) as num,
+    ifnull(Mall.id,0) as mall_id
+    from Mall
+    
+    left join Favorite
+    on Mall.id = Favorite.mall_id
+    group by Mall.id
+    ) b
+
+inner join Mall
+on Mall.id = b.mall_id
+
+inner join mall_image
+on Mall.id = mall_image.id
+
+left join Favorite
+on Favorite.mall_id = Mall.id
+
+left join (
+    select
+count(
+	if(
+		Favorite.mall_id = Mall.id,
+        1,
+        null
+    )
+) as num,
+ifnull(
+	Favorite.mall_id,
+    0
+) as mall_id
+from Mall
+
+left join Favorite
+on Mall.id = Favorite.mall_id
+
+group by Mall.id
+    ) mall_rank
+on mall_rank.mall_id = Mall.id
+
+order by mall_rank asc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res_body = $st->fetchAll();
+
+    $st=null;
+
+    $mall_id[] = (Object)Array();
+
+    for($i = 0; $i<count($res_body); $i++){
+        $mall_id[$i] = $res_body[$i]['mall_id'];
+    }
+
+    $query_image = "
+select
+id as tag_id,
+name as tag_name
+from Tag
+
+where Tag.mall_id = ?;";
+
+
+    $st2 = $pdo->prepare($query_image);
+    //    $st->execute([$param,$param]);
+
+    for($i = 0; $i<count($res_body); $i++){
+        $st2->execute([$mall_id[$i]]);
+        $st2->setFetchMode(PDO::FETCH_ASSOC);
+        $res_image = $st2->fetchAll();
+        $res_body[$i]["tags"] = $res_image;
+    }
+
+    $res = $res_body;
+
+    $pdo = null;
+
+    return $res;
+}
+
+function getMallsWithTag($user_id,$tag_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+
+Mall.id as mall_id,
+mall_image.image_url as image_url,
+if(
+    Favorite.user_id = ?,
+    'Y',
+    'N'
+    )
+as is_favorite,
+Mall.name as mall_name,
+(
+    SELECT COUNT(*) + 1 
+    FROM 
+    (
+        select
+        count(if(Favorite.mall_id = Mall.id,1,null)) as num,
+        ifnull(Mall.id,0) as mall_id
+        from Mall
+        left join Favorite
+        on Mall.id = Favorite.mall_id
+        group by Mall.id
+    )
+    mall_rank WHERE num > b.num
+) AS mall_rank,
+' ' as tags
+
+from (
+    select
+    count(if(Favorite.mall_id = Mall.id,1,null)) as num,
+    ifnull(Mall.id,0) as mall_id
+    from Mall
+    
+    left join Favorite
+    on Mall.id = Favorite.mall_id
+    group by Mall.id
+    ) b
+
+inner join Mall
+on Mall.id = b.mall_id
+
+inner join mall_image
+on Mall.id = mall_image.id
+
+left join Favorite
+on Favorite.mall_id = Mall.id
+
+left join (
+    select
+count(
+	if(
+		Favorite.mall_id = Mall.id,
+        1,
+        null
+    )
+) as num,
+ifnull(
+	Favorite.mall_id,
+    0
+) as mall_id
+from Mall
+
+left join Favorite
+on Mall.id = Favorite.mall_id
+group by Mall.id
+    ) mall_rank
+on mall_rank.mall_id = Mall.id
+
+left join Tag
+on Tag.mall_id = Mall.id
+
+where Tag.id = ?
+
+order by mall_rank asc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$tag_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res_body = $st->fetchAll();
+
+    $st=null;
+
+    $mall_id[] = (Object)Array();
+
+    for($i = 0; $i<count($res_body); $i++){
+        $mall_id[$i] = $res_body[$i]['mall_id'];
+    }
+
+    $query_image = "
+select
+id as tag_id,
+name as tag_name
+from Tag
+
+where Tag.mall_id = ?;";
+
+
+    $st2 = $pdo->prepare($query_image);
+    //    $st->execute([$param,$param]);
+
+    for($i = 0; $i<count($res_body); $i++){
+        $st2->execute([$mall_id[$i]]);
+        $st2->setFetchMode(PDO::FETCH_ASSOC);
+        $res_image = $st2->fetchAll();
+        $res_body[$i]["tags"] = $res_image;
+    }
+
+    $res = $res_body;
+
+    $pdo = null;
+
+    return $res[0];
+}
+
+//쇼핑몰 상세 조회 API
+function getMallDetail($user_id,$mallID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+
+Mall.id as mall_id,
+mall_image.image_url as image_url,
+if(
+    Favorite.user_id = ?,
+    'Y',
+    'N'
+    )
+as is_favorite,
+Mall.name as mall_name,
+' ' as tags
+
+from Mall
+
+inner join mall_image
+on Mall.id = mall_image.id
+
+left join Favorite
+on Favorite.mall_id = Mall.id
+
+where Mall.id = ?;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$mallID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res_body = $st->fetchAll();
+
+    $st=null;
+
+    $mall_id[] = (Object)Array();
+
+    for($i = 0; $i<count($res_body); $i++){
+        $mall_id[$i] = $res_body[$i]['mall_id'];
+    }
+
+    $query_image = "
+select
+id as tag_id,
+name as tag_name
+from Tag
+
+where Tag.mall_id = ?;";
+
+
+    $st2 = $pdo->prepare($query_image);
+    //    $st->execute([$param,$param]);
+
+    for($i = 0; $i<count($res_body); $i++){
+        $st2->execute([$mall_id[$i]]);
+        $st2->setFetchMode(PDO::FETCH_ASSOC);
+        $res_image = $st2->fetchAll();
+        $res_body[$i]["tags"] = $res_image;
+    }
+
+    $res = $res_body;
+
+    $pdo = null;
+
+    return $res[0];
+}
+
 //태그 추가
 function postTag($user_id,$mall_id,$tag_name)
 {
@@ -764,7 +1067,100 @@ function deleteHeart($user_id, $item_id)
     return;
 }
 
-//하트 추가
+//하트 개수 조회
+function getHearts($user_id)
+{
+    $pdo = pdoSqlConnect();
+    $query_num = "select concat('찜한 상품 ',count(id)) as num, ' ' as list from Heart where user_id = ?;";
+
+    $st_num = $pdo->prepare($query_num);
+    //    $st->execute([$param,$param]);
+    $st_num->execute([$user_id]);
+    $st_num->setFetchMode(PDO::FETCH_ASSOC);
+    $res_num = $st_num->fetchAll();
+
+    $query_body = "
+select
+
+Item.id as item_id,
+
+' ' as image,
+
+if(
+    Mall.shipment = 0,
+    'Y',
+    'N'
+    )
+as is_free_ship,
+
+Mall.name as mall_name,
+
+Item.name as item_name,
+
+concat(Item.discount,'%') as discount,
+
+concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price
+
+from Item
+
+inner join Mall
+on Item.mall_id = Mall.id
+
+inner join item_category
+on item_category.id = Item.id
+
+left join Heart
+on Heart.item_id = Item.id
+
+left join User
+on User.id = Heart.user_id
+
+where Heart.user_id = ?;
+";
+
+    $st_body = $pdo->prepare($query_body);
+    //    $st->execute([$param,$param]);
+    $st_body->execute([$user_id]);
+    $st_body->setFetchMode(PDO::FETCH_ASSOC);
+    $res_body = $st_body->fetchAll();
+
+    $item_id[] = (Object)Array();
+
+    for($i = 0; $i<count($res_body); $i++){
+        $item_id[$i] = $res_body[$i]['item_id'];
+    }
+
+    $query_image = "select
+group_concat(case when item_image.id%2=1 then image_url end) image_url1,
+group_concat(case when item_image.id%2=0 then image_url end) image_url2
+from Item
+
+inner join item_image
+on Item.id = item_image.item_id
+
+where Item.id = ?;";
+
+
+    $st2 = $pdo->prepare($query_image);
+    //    $st->execute([$param,$param]);
+
+    for($i = 0; $i<count($res_body); $i++){
+        $st2->execute([$item_id[$i]]);
+        $st2->setFetchMode(PDO::FETCH_ASSOC);
+        $res_image = $st2->fetchAll();
+        $res_body[$i]["image"] = $res_image[0];
+    }
+
+    $res_num[0]["list"] = $res_body[0];
+    $res = $res_num;
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+}
+
+//즐겨찾기 추가
 function postFavorite($user_id, $mall_id)
 {
     $pdo = pdoSqlConnect();
@@ -894,16 +1290,16 @@ where Item.id = ?;";
         $st2->execute([$item_id[$i]]);
         $st2->setFetchMode(PDO::FETCH_ASSOC);
         $res_image = $st2->fetchAll();
-        $res_body[$i]["image"] = $res_image;
+        $res_body[$i]["image"] = $res_image[0];
     }
 
-    $res_num[0]["list"] = $res_body;
+    $res_num[0]["list"] = $res_body[0];
     $res = $res_num;
 
     $st = null;
     $pdo = null;
 
-    return $res;
+    return $res[0];
 }
 
 //장바구니 삭제
@@ -993,7 +1389,7 @@ where Orders.user_id = ? and Orders.is_basket='Y'
     $st = null;
     $pdo = null;
 
-    return $res;
+    return $res[0];
 }
 
 //장바구니 총액 계산
@@ -1592,6 +1988,36 @@ function isSameCategory($category, $category_detail){
     return intval($res[0]["exist"]);
 
 }
+//입력받은 이미지 확장자가 png인가
+function isImagePNG($image_url){
+    $pdo = pdoSqlConnect();
+    $query = "select if(right(?,3) = 'png',1,0) as exist;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$image_url]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//5개의 값이 모두 다른지 확인
+function isAllDifferent($id0,$id1,$id2,$id3,$id4){
+    $array[] = (Object)Array();
+    $array[0] = $id0; $array[1] = $id1; $array[2] = $id2; $array[3] = $id3; $array[4] = $id4;
+    for($i=0;$i<4;$i++){
+        for($j=$i+1;$j<5;$j++){
+            if($array[$i] == $array[$j]){
+                return false;
+                break;
+            }
+        }
+    }
+    return true;
+}
 
 // ------------------------보조 함수------------------------------
 //장바구니 리셋
@@ -1839,22 +2265,22 @@ function categoryTextToCode($text){
 //    }
 
 //READ
-function test($text)
-{
-    $pdo = pdoSqlConnect();
-    $query = "SELECT * FROM Item where Item.id = ?;";
-
-    $st = $pdo->prepare($query);
-    //    $st->execute([$param,$param]);
-    $st->execute($text);
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
-
-    $st = null;
-    $pdo = null;
-
-    return $res;
-}
+//function test($text)
+//{
+//    $pdo = pdoSqlConnect();
+//    $query = "SELECT * FROM Item where Item.id = ?;";
+//
+//    $st = $pdo->prepare($query);
+//    //    $st->execute([$param,$param]);
+//    $st->execute($text);
+//    $st->setFetchMode(PDO::FETCH_ASSOC);
+//    $res = $st->fetchAll();
+//
+//    $st = null;
+//    $pdo = null;
+//
+//    return $res;
+//}
 
 //READ
 function testDetail($testNo)

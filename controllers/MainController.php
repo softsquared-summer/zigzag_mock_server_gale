@@ -49,93 +49,182 @@ try {
         case "createUser":
             http_response_code(200);
 
-            $email = $req->email;
-            $password = $req->password;
-            $phone = $req->phone;
-            $check1 = $req->is_over_14;
-            $check2 = $req->is_service_agree;
-            $check3 = $req->is_privacy_agree;
-            $check4 = $req->is_alarm_agree;
-
-            //값이 null값이 들어왔을 때 대처
-            if($email == null
-                or $password == null
-                or $phone == null){
+            //변수별 post variation
+            if(empty($req->email)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "빠진 항목을 다시 기입해주세요";
+                $res->message = "이메일을 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
-
-            //입력값 타입 검사
-            if(nl2br(gettype($email)) != "string"
-                or nl2br(gettype($password)) != "string"
-                or nl2br(gettype($phone)) != "string"){
-                $res->is_success = FALSE;
-                $res->code = 201;
-                $res->message = "유효한 타입이 아닙니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                return;
-            }
-
-            //동의 안하면 회원가입 못 함
-            if($check1 != "Y"
-            or $check2 != "Y"
-            or $check3 != "Y"){
-                $res->is_success = FALSE;
-                $res->code = 201;
-                $res->message = "필수 항목에 동의해주세요.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                return;
-            }
-
-            //잘못된 입력 거르기
-            if(!($check4 == "Y" or $check4 == "N")){
-                $res->is_success = FALSE;
-                $res->code = 201;
-                $res->message = "잘못된 입력입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                return;
-            }
-
-            //이미 존재하는 회원인지 검토
-            if(isExistEmail($email)){
-
-                //삭제되었는지 확인 --> 삭제 시 재가입
-                if(isDeletedUser($email)){
-                    $res->result = recreateUser($email);
-                    $res->is_success = TRUE;
-                    $res->code = 100;
-                    $res->message = "회원가입을 축하드립니다!";
+            else{
+                $email = $req->email;
+                //변수 타입 체크
+                if(nl2br(gettype($email)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
                 else{
-                    $res->is_success = FALSE;
-                    $res->code = 201;
-                    $res->message = "이미 존재하는 회원입니다.";
-                    echo json_encode($res, JSON_NUMERIC_CHECK);
-                    return;
+                    //변수 존재성 체크
+                    if(isExistEmail($email)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "이미 존재하는 아이디입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
                 }
             }
 
-            //중복되는 핸드폰 번호인지 확인
-            if(isExistPhone($phone)){
+            if(empty($req->password)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "이미 등록된 핸드폰 번호입니다.";
+                $res->message = "비밀번호를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
-
-                //핸드폰 번호 길이 다를 경우 로그인 못 함
-                if(strlen($phone) != 11){
+            }
+            else{
+                $password = $req->password;
+                //변수 타입 체크
+                if(nl2br(gettype($password)) != "string"){
                     $res->is_success = FALSE;
                     $res->code = 201;
-                    $res->message = "잘못된 형식의 핸드폰 번호입니다.";
+                    $res->message = "잘못된 타입입니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
+                //변수 존재성 체크 : 필요 없음
+            }
+
+            if(empty($req->phone)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "핸드폰 번호를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $phone = $req->phone;
+                //변수 타입 체크
+                if(nl2br(gettype($phone)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(isExistPhone($phone)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "이미 존재하는 핸드폰 번호입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($req->is_over_14)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "만 14세 이상입니다 항목에 체크해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $check1 = $req->is_over_14;
+                //변수 타입 체크
+                if($check1 != "Y"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "만 14세 이상입니다 항목에 체크해주세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                //변수 존재성 체크 : 필요 없음
+            }
+
+            if(empty($req->is_service_agree)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "서비스 이용약관 동의 항목에 체크해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $check2 = $req->is_service_agree;
+                //변수 타입 체크
+                if($check2 != "Y"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "서비스 이용약관 동의 항목에 체크해주세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                //변수 존재성 체크 : 필요 없음
+            }
+
+            if(empty($req->is_privacy_agree)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "개인정보 수집이용 동의 항목에 체크해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $check3 = $req->is_privacy_agree;
+                //변수 타입 체크
+                if($check3 != "Y"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "개인정보 수집이용 동의 항목에 체크해주세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                //변수 존재성 체크 : 필요 없음
+            }
+
+            if(empty($req->is_alarm_agree) or $req->is_alarm_agree == "N"){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "개인정보 수집이용 동의 항목에 체크해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $check4 = $req->is_alarm_agree;
+                //변수 타입 체크
+                if($check3 != "Y"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "개인정보 수집이용 동의 항목에 체크해주세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                //변수 존재성 체크 : 필요 없음
+            }
+
+            //삭제된 회원 재가입
+            if(isDeletedUser($email)){
+                $res->result = recreateUser($email);
+                $res->is_success = TRUE;
+                $res->code = 100;
+                $res->message = "회원가입을 축하드립니다!";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //핸드폰 번호 길이 다를 경우 로그인 못 함
+            if(strlen($phone) != 11){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "잘못된 형식의 핸드폰 번호입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
             }
 
             $res->result = createUser($email, $password, $phone);
@@ -154,8 +243,54 @@ try {
             // jwt 유효성 검사
             http_response_code(200);
 
-            $email = $req->email;
-            $password = $req->password;
+            if(empty($req->email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이메일을 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $email = $req->email;
+                //변수 타입 체크
+                if(nl2br(gettype($email)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistEmail($email)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이디입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($req->password)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "비밀번호를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $password = $req->password;
+                //변수 타입 체크
+                if(nl2br(gettype($password)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                //변수 존재성 체크 : 필요 없음
+            }
 
             if(!isValidUser($email, $password)){
                 $res->is_success = FALSE;

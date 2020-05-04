@@ -556,9 +556,6 @@ try {
                 }
             }
 
-
-
-
         /*
 * API No. 7
 * API Name : 아이템 리뷰 작성 API
@@ -602,51 +599,187 @@ try {
                 return;
             }
 
-            $item_id = $req->item_id;
-            $item_color = $req->item_color;
-            $item_size = $req->item_size;
-            $score = $req->score;
-            $size = $req->size;
-            $color = $req->color;
-            $finish = $req->finish;
-            $comment = $req->comment;
-
-            //item 타입 및 존재 여부 체크
-            if(nl2br(gettype($item_id)) != "integer"){
+            //변수별 post variation
+            if(empty($req->item_id)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "아이템 아이디를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
-            }else{
-                //존재하는 아이템 아이디인지 확인
-                if(!isExistItem($item_id)){
+            }
+            else{
+                $item_id = $req->item_id;
+                //변수 타입 체크
+                if(nl2br(gettype($item_id)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
-                    $res->message = "존재하지 않는 아이디입니다.";
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistItem($item_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($req->item_color)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "아이템 색깔을 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $item_color = $req->item_color;
+                //변수 타입 체크
+                if(nl2br(gettype($item_color)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistColor($item_id,$item_color)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 색깔입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($req->item_size)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "아이템 사이즈를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $item_size = $req->item_size;
+                //변수 타입 체크
+                if(nl2br(gettype($item_size)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistSize($item_id,$item_size)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 사이즈입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($req->score)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "별점을 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $score = $req->score;
+                //변수 타입 체크
+                if(nl2br(gettype($score)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
             }
 
-            //score 타입 체크
-            if(nl2br(gettype($score)) != "integer"){
+            if(empty($req->size)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "사이즈가 어땠는지 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
+            else{
+                $size = $req->size;
+                //변수 타입 체크
+                if(nl2br(gettype($size)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
 
-            //size, color, finish 값 체크
-            if(nl2br(gettype($size)) != "integer"
-            or nl2br(gettype($color)) != "integer"
-            or nl2br(gettype($finish)) != "integer"){
+            if(empty($req->color)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "색깔이 어땠는지 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
+            }
+            else{
+                $color = $req->color;
+                //변수 타입 체크
+                if(nl2br(gettype($color)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            if(empty($req->finish)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "마감 상태가 어땠는지 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $finish = $req->finish;
+                //변수 타입 체크
+                if(nl2br(gettype($finish)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            if(empty($req->comment)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "리뷰 내용을 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $comment = $req->comment;
+                //변수 타입 체크
+                if(nl2br(gettype($comment)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
             }
 
             //image_url값이 없으면 "없음"으로 표시
@@ -655,16 +788,14 @@ try {
             }
             else{
                 $image_url = $req->image_url;
-            }
-
-            //comment, image_url 타입 체크
-            if(nl2br(gettype($comment)) != "string"
-            or nl2br(gettype($image_url)) != "string"){
-                $res->is_success = FALSE;
-                $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                return;
+                if(nl2br(gettype($image_url)) != "string"
+                or !isImagePNG($image_url)){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.png 확장자로 이미지를 넣어주세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
             }
 
             //유저가 사지 않은 제품은 못 사게 하기
@@ -735,23 +866,32 @@ try {
                 return;
             }
 
-            $comment_id = $_GET["id"];
-
-            //입력받은 값 타입 체크
-            if(nl2br(gettype($comment_id)) != "string"){
+            if(empty($_GET["id"])){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "리뷰 아이디를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
-            }else{
-                //존재하는 리뷰 아이디인지 그리고 그 리뷰를 해당 유저가 작성했는지 확인
-                if(!isExistComment($user_id,$comment_id)){
+            }
+            else{
+                $comment_id = $_GET["id"];
+                //변수 타입 체크
+                if(nl2br(gettype($comment_id)) != "string"){
                     $res->is_success = FALSE;
                     $res->code = 201;
-                    $res->message = "존재하지 않는 아이템입니다.";
+                    $res->message = "잘못된 타입입니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistComment($user_id,$comment_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 리뷰입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
                 }
             }
 
@@ -759,6 +899,156 @@ try {
             $res->is_success = TRUE;
             $res->code = 100;
             $res->message = "리뷰 삭제가 완료되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+* API No. 9
+* API Name : 쇼핑몰 리스트 조회 API
+* 마지막 수정 날짜 : 20.05.04
+*/
+        case "getMalls":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //쿼리스트링 태그값 가져오기
+            if(empty($_GET["tag_id"])){
+                $res->result = getMalls($user_id);
+                $res->is_success = TRUE;
+                $res->code = 100;
+                $res->message = "쇼핑몰 리스트 조회가 완료되었습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else{
+                $tag_id = $_GET["tag_id"];
+                //쇼핑몰 아이디 타입 체크
+                if(nl2br(gettype($tag_id)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //쇼핑몰 아이디 존재성 체크
+                    if(!isExistTag($user_id,$tag_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이디입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+            $res->result = getMallsWithTag($user_id,$tag_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "쇼핑몰 리스트 조회가 완료되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+     * API No. 10
+     * API Name : 쇼핑몰 상세 조회 API
+     * 마지막 수정 날짜 : 19.05.02
+     */
+        case "getMallDetail":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $mall_id = $vars["mallID"];
+
+            //입력받은 값 타입 체크
+            if(nl2br(gettype($mall_id)) != "string"){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "잘못된 타입입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }else{
+                //존재하는 아이템 아이디인지 확인
+                if(!isExistMall($mall_id)){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "존재하지 않는 아이디입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            $res->result = getMallDetail($user_id, $mall_id);
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "테스트 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
@@ -1155,6 +1445,56 @@ try {
             }
 
         /*
+* API No. 16
+* API Name : 찜한 아이템 리스트 조회 API
+* 마지막 수정 날짜 : 20.05.04
+*/
+        case "getHearts":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->result = getHearts($user_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "찜한 아이템 개수 조회가 완료되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
 * API No. 17
 * API Name : 즐겨찾기하기 API
 * 마지막 수정 날짜 : 19.05.04
@@ -1259,6 +1599,56 @@ try {
             }
 
         /*
+* API No. 18
+* API Name : 즐겨찾기한 아이템 리스트 조회 API
+* 마지막 수정 날짜 : 20.05.04
+*/
+        case "getFavorites":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->result = getFavorites($user_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "찜한 아이템 개수 조회가 완료되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
 * API No. 19
 * API Name : 장바구니 추가 API
 * 마지막 수정 날짜 : 19.05.03
@@ -1301,56 +1691,111 @@ try {
                 return;
             }
 
-            $item_id = $req->item_id;
-            $size = $req->size;
-            $color = $req->color;
-            $num = $req->num;
-
-            //item 타입 및 존재 여부 체크
-            if(nl2br(gettype($item_id)) != "integer"){
+            //변수별 post variation
+            if(empty($req->item_id)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "아이템 아이디를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
-            }else{
-                //존재하는 아이템 아이디인지 확인
-                if(!isExistItem($item_id)){
+            }
+            else{
+                $item_id = $req->item_id;
+                //변수 타입 체크
+                if(nl2br(gettype($item_id)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
-                    $res->message = "존재하지 않는 아이디입니다.";
+                    $res->message = "잘못된 타입입니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
+                else{
+                    //변수 존재성 체크
+                    if(isExistItem($item_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "이미 존재하는 아이디입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
             }
 
-            //size, color, num 타입 체크
-            if(nl2br(gettype($size)) != "string"
-            or nl2br(gettype($color)) != "string"
-            or nl2br(gettype($num)) != "integer"){
+            if(empty($req->size)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "아이템 사이즈를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
+            else{
+                $size = $req->size;
+                //변수 타입 체크
+                if(nl2br(gettype($size)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistSize($item_id,$size)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 사이즈입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
 
-            //상품에 맞는 색깔인지 검색
-            if(!isExistColor($item_id, $color)){
+            if(empty($req->color)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "아이템에 존재하지 않는 색입니다.";
+                $res->message = "아이템 색깔를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
+            else{
+                $color = $req->color;
+                //변수 타입 체크
+                if(nl2br(gettype($color)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistColor($item_id,$color)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 색깔입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
 
-            //상품에 맞는 사이즈인지 검색
-            if(!isExistSize($item_id, $size)){
+            if(empty($req->num)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "아이템에 존재하지 않는 사이즈입니다.";
+                $res->message = "아이템 개수를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
+            }
+            else{
+                $num = $req->num;
+                //변수 타입 체크
+                if(nl2br(gettype($num)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
             }
 
             //구매하지 않고 삭제된 아이템 다시 장바구니에 넣을 경우
@@ -1413,56 +1858,111 @@ try {
                 return;
             }
 
-            $item_id = $req->item_id;
-            $size = $req->size;
-            $color = $req->color;
-            $num = $req->num;
-
-            //item 타입 및 존재 여부 체크
-            if(nl2br(gettype($item_id)) != "integer"){
+            //변수별 post variation
+            if(empty($req->item_id)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "아이템 아이디를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
-            }else{
-                //존재하는 아이템 아이디인지 확인
-                if(!isExistItem($item_id)){
+            }
+            else{
+                $item_id = $req->item_id;
+                //변수 타입 체크
+                if(nl2br(gettype($item_id)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
-                    $res->message = "존재하지 않는 아이디입니다.";
+                    $res->message = "잘못된 타입입니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
+                else{
+                    //변수 존재성 체크
+                    if(isExistItem($item_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "이미 존재하는 아이디입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
             }
 
-            //size, color, num 타입 체크
-            if(nl2br(gettype($size)) != "string"
-                or nl2br(gettype($color)) != "string"
-                or nl2br(gettype($num)) != "integer"){
+            if(empty($req->size)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "아이템 사이즈를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
+            else{
+                $size = $req->size;
+                //변수 타입 체크
+                if(nl2br(gettype($size)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistSize($item_id,$size)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 사이즈입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
 
-            //상품에 맞는 색깔인지 검색
-            if(!isExistColor($item_id, $color)){
+            if(empty($req->color)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "아이템에 존재하지 않는 색입니다.";
+                $res->message = "아이템 색깔를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
+            else{
+                $color = $req->color;
+                //변수 타입 체크
+                if(nl2br(gettype($color)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistColor($item_id,$color)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 색깔입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
 
-            //상품에 맞는 사이즈인지 검색
-            if(!isExistSize($item_id, $size)){
+            if(empty($req->num)){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "아이템에 존재하지 않는 사이즈입니다.";
+                $res->message = "아이템 개수를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
+            }
+            else{
+                $num = $req->num;
+                //변수 타입 체크
+                if(nl2br(gettype($num)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
             }
 
             //구매하지 않고 삭제된 아이템 다시 직접구매할 경우
@@ -1575,23 +2075,32 @@ try {
                 return;
             }
 
-            $item_id = $_GET["item_id"];
-
-            //입력받은 값 타입 체크
-            if(nl2br(gettype($item_id)) != "string"){
+            if(empty($_GET["item_id"])){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
+                $res->message = "아이템 아이디를 입력해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
-            }else{
-                //존재하는 아이템 아이디인지 확인
-                if(!isExistItemOnOrders($user_id,$item_id)){
+            }
+            else{
+                $item_id = $_GET["item_id"];
+                //변수 타입 체크
+                if(nl2br(gettype($item_id)) != "string"){
                     $res->is_success = FALSE;
                     $res->code = 201;
-                    $res->message = "존재하지 않는 아이템입니다.";
+                    $res->message = "잘못된 타입입니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistItemOnOrders($user_id,$item_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
                 }
             }
 
@@ -1724,30 +2233,114 @@ try {
                 return;
             }
 
-            $name = $req->name;
-            $phone = $req->phone;
-            $zipcode = $req->zipcode;
-            $address = $req->address;
-            $address_detail = $req->address_detail;
+            //변수별 post variation
+            if(empty($req->name)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이름를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $name = $req->name;
+                //변수 타입 체크
+                if(nl2br(gettype($name)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            if(empty($req->phone)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "번호를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $phone = $req->phone;
+                //변수 타입 체크
+                if(nl2br(gettype($phone)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            if(empty($req->zipcode)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "우편번호를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $zipcode = $req->zipcode;
+                //변수 타입 체크
+                if(nl2br(gettype($zipcode)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            if(empty($req->address)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "주소를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $address = $req->address;
+                //변수 타입 체크
+                if(nl2br(gettype($address)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            if(empty($req->address_detail)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "주소를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $address_detail = $req->address_detail;
+                //변수 타입 체크
+                if(nl2br(gettype($address_detail)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
             if(empty($req->memo)){
                 $memo = ' ';
             }
             else{
                 $memo = $req->memo;
-            }
-
-            //타입 체크
-            if(nl2br(gettype($name)) != "string"
-            or nl2br(gettype($phone)) != "string"
-            or nl2br(gettype($zipcode)) != "integer"
-            or nl2br(gettype($address)) != "string"
-            or nl2br(gettype($address_detail)) != "string"
-            or nl2br(gettype($memo)) != "string"){
-                $res->is_success = FALSE;
-                $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                return;
+                if(nl2br(gettype($memo)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
             }
 
             //기존에 설정된 배송지는 추가 막기
@@ -1845,9 +2438,9 @@ try {
                 return;
             }
             else{
-                $item1 = $req->order_id1;
+                $order1 = $req->order_id1;
                 //item 타입 및 존재 여부 체크
-                if(nl2br(gettype($item1)) != "integer"){
+                if(nl2br(gettype($order1)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
                     $res->message = "잘못된 타입입니다.";
@@ -1855,7 +2448,7 @@ try {
                     return;
                 }else{
                     //존재하는 아이템 아이디인지 확인
-                    if(!isExistOrder($user_id,$item1)){
+                    if(!isExistOrder($user_id,$order1)){
                         $res->is_success = FALSE;
                         $res->code = 201;
                         $res->message = "존재하지 않는 아이템1입니다.";
@@ -1866,11 +2459,11 @@ try {
             }
 
             //나머지 아이템은 빈칸일 시 공백으로 넘기기
-            if(empty($req->order_id2)){$item2 = 0;}
+            if(empty($req->order_id2)){$order2 = 0;}
             else{
-                $item2 = $req->order_id2;
+                $order2 = $req->order_id2;
                 //item 타입 및 존재 여부 체크
-                if(nl2br(gettype($item2)) != "integer"){
+                if(nl2br(gettype($order2)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
                     $res->message = "잘못된 타입입니다.";
@@ -1878,7 +2471,7 @@ try {
                     return;
                 }else{
                     //존재하는 아이템 아이디인지 확인
-                    if(!isExistOrder($user_id,$item2)){
+                    if(!isExistOrder($user_id,$order2)){
                         $res->is_success = FALSE;
                         $res->code = 201;
                         $res->message = "존재하지 않는 아이템2입니다.";
@@ -1888,11 +2481,11 @@ try {
                 }
             }
 
-            if(empty($req->order_id3)){$item3 = 0;}
+            if(empty($req->order_id3)){$order3 = 0;}
             else{
-                $item3 = $req->order_id3;
+                $order3 = $req->order_id3;
                 //item 타입 및 존재 여부 체크
-                if(nl2br(gettype($item3)) != "integer"){
+                if(nl2br(gettype($order3)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
                     $res->message = "잘못된 타입입니다.";
@@ -1900,7 +2493,7 @@ try {
                     return;
                 }else{
                     //존재하는 아이템 아이디인지 확인
-                    if(!isExistOrder($user_id,$item3)){
+                    if(!isExistOrder($user_id,$order3)){
                         $res->is_success = FALSE;
                         $res->code = 201;
                         $res->message = "존재하지 않는 아이템3입니다.";
@@ -1910,11 +2503,11 @@ try {
                 }
             }
 
-            if(empty($req->order_id4)){$item4 = 0;}
+            if(empty($req->order_id4)){$order4 = 0;}
             else{
-                $item4 = $req->order_id4;
+                $order4 = $req->order_id4;
                 //item 타입 및 존재 여부 체크
-                if(nl2br(gettype($item4)) != "integer"){
+                if(nl2br(gettype($order4)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
                     $res->message = "잘못된 타입입니다.";
@@ -1922,7 +2515,7 @@ try {
                     return;
                 }else{
                     //존재하는 아이템 아이디인지 확인
-                    if(!isExistOrder($user_id,$item4)){
+                    if(!isExistOrder($user_id,$order4)){
                         $res->is_success = FALSE;
                         $res->code = 201;
                         $res->message = "존재하지 않는 아이템4입니다.";
@@ -1932,11 +2525,11 @@ try {
                 }
             }
 
-            if(empty($req->order_id5)){$item5 = 0;}
+            if(empty($req->order_id5)){$order5 = 0;}
             else{
-                $item5 = $req->order_id5;
+                $order5 = $req->order_id5;
                 //item 타입 및 존재 여부 체크
-                if(nl2br(gettype($item5)) != "integer"){
+                if(nl2br(gettype($order5)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
                     $res->message = "잘못된 타입입니다.";
@@ -1944,7 +2537,7 @@ try {
                     return;
                 }else{
                     //존재하는 아이템 아이디인지 확인
-                    if(!isExistOrder($user_id,$item5)){
+                    if(!isExistOrder($user_id,$order5)){
                         $res->is_success = FALSE;
                         $res->code = 201;
                         $res->message = "존재하지 않는 아이템5입니다.";
@@ -1955,8 +2548,15 @@ try {
             }
 
             //입력받은 아이템끼리 중복되면 안됨
+            if(!isAllDifferent($order1,$order2,$order3,$order4,$order5)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "중복되는 아이템이 존재합니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
 
-            $res->result = payment($user_id,$item1,$item2,$item3,$item4,$item5);
+            $res->result = payment($user_id,$order1,$order2,$order3,$order4,$order5);
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "결제가 완료되었습니다.";
@@ -1970,8 +2570,7 @@ try {
 //         */
 //        case "test":
 //            http_response_code(200);
-//            $text = [4];
-//            $res->result = test($text);
+//            $res->result = isAllDifferent(3,2,3,4,5);
 //            $res->isSuccess = TRUE;
 //            $res->code = 100;
 //            $res->message = "테스트 성공";
