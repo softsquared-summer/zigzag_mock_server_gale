@@ -243,7 +243,7 @@ where Item.id = ?;";
     $st2->setFetchMode(PDO::FETCH_ASSOC);
     $res_image = $st2->fetchAll();
 
-    $res_body[0]["image"] = $res_image;
+    $res_body[0]["image"] = $res_image[0];
     $res = $res_body;
 
 
