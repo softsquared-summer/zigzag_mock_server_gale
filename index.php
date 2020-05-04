@@ -65,6 +65,15 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     //21. 장바구니 아이템 삭제 API
     $r->addRoute('DELETE', '/basket', ['IndexController', 'deleteBaskets']);
 
+    //22. 결제 총액 계산 API
+    $r->addRoute('GET', '/totalpay', ['IndexController', 'totalPay']);
+
+    //23. 배송지 설정 API
+    $r->addRoute('POST', '/address', ['IndexController', 'postAddress']);
+
+    //24. 주문 동의 확인 및 결제 API
+    $r->addRoute('POST', '/payment', ['IndexController', 'payment']);
+
     //test sample
 //    $r->addRoute('GET', '/', ['IndexController', 'index']);
 //    $r->addRoute('GET', '/test', ['IndexController', 'test']);

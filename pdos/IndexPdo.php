@@ -114,12 +114,13 @@ left join User
 on User.id = Heart.user_id";
 
     $query = $query_body." where ".$keyword_input." and ".$category_input." and ".$ship_input." ".$filter_input;
-    echo $query;
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$user_id]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res_body = $st->fetchAll();
+
+    $st=null;
 
     $item_id[] = (Object)Array();
 
@@ -128,9 +129,13 @@ on User.id = Heart.user_id";
     }
 
     $query_image = "
-select image_url from item_image
+select
+group_concat(case when item_image.id%2=1 then image_url end) image_url1,
+group_concat(case when item_image.id%2=0 then image_url end) image_url2
+from Item
 
-inner join Item on Item.id = item_image.item_id
+inner join item_image
+on Item.id = item_image.item_id
 
 where Item.id = ?;";
 
@@ -147,7 +152,6 @@ where Item.id = ?;";
 
     $res = $res_body;
 
-    $st=null;
     $pdo = null;
 
     return $res;
@@ -221,9 +225,13 @@ where Item.id = ?;";
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res_body = $st->fetchAll();
 
-    $query_image = "select image_url from item_image
+    $query_image = "select
+group_concat(case when item_image.id%2=1 then image_url end) image_url1,
+group_concat(case when item_image.id%2=0 then image_url end) image_url2
+from Item
 
-inner join Item on Item.id = item_image.item_id
+inner join item_image
+on Item.id = item_image.item_id
 
 where Item.id = ?;";
 
@@ -733,9 +741,13 @@ where Orders.user_id = ? and Orders.is_deleted = 'N' and Orders.is_purchased = '
         $item_id[$i] = $res_body[$i]['item_id'];
     }
 
-    $query_image = "select image_url from item_image
+    $query_image = "select
+group_concat(case when item_image.id%2=1 then image_url end) image_url1,
+group_concat(case when item_image.id%2=0 then image_url end) image_url2
+from Item
 
-inner join Item on Item.id = item_image.item_id
+inner join item_image
+on Item.id = item_image.item_id
 
 where Item.id = ?;";
 
@@ -774,6 +786,204 @@ function deleteBaskets($user_id, $item_id)
     $pdo = null;
 
     return;
+}
+
+//직접구매 총액 계산
+function totalPay($user_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "
+select
+ifnull(
+    sum(Item.price * Orders.num),
+    0) as price,
+
+ifnull(
+    round(sum(
+        if(
+            Mall.shipment = 0,
+            Mall.shipment,
+            Mall.shipment / Mall.mall_count
+            )
+        )),
+    0) as ship,
+    
+ifnull(
+    sum(Item.price * Orders.num) + 
+    round(sum(
+        if(
+            Mall.shipment = 0,
+            Mall.shipment,
+            Mall.shipment / Mall.mall_count
+            )
+        )),
+    0) as total
+
+from Orders
+
+inner join Item
+on Item.id = Orders.item_id
+
+inner join (
+    SELECT
+        count(
+            Mall.id
+            ) as mall_count,
+            Mall.id,
+            Mall.shipment
+        from Orders
+
+        inner join Item
+        on Item.id = Orders.item_id
+
+        inner join Mall
+        on Item.mall_id = Mall.id
+
+        where Orders.user_id = ? and Orders.is_basket='N'
+        and Orders.is_purchased='N' and Orders.is_deleted='N'
+
+        GROUP BY Mall.id
+            ) Mall
+on Item.mall_id = Mall.id
+
+where Orders.user_id = ? and Orders.is_basket='Y'
+  and Orders.is_purchased='N' and Orders.is_deleted='N';";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$user_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//장바구니 총액 계산
+function totalPayBasket($user_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select
+ifnull(
+    sum(Item.price * Orders.num),
+    0) as price,
+
+ifnull(
+    round(sum(
+        if(
+            Mall.shipment = 0,
+            Mall.shipment,
+            Mall.shipment / Mall.mall_count
+            )
+        )),
+    0) as ship,
+    
+ifnull(
+    sum(Item.price * Orders.num) + 
+    round(sum(
+        if(
+            Mall.shipment = 0,
+            Mall.shipment,
+            Mall.shipment / Mall.mall_count
+            )
+        )),
+    0) as total
+
+from Orders
+
+inner join Item
+on Item.id = Orders.item_id
+
+inner join (
+    SELECT
+        count(
+            Mall.id
+            ) as mall_count,
+            Mall.id,
+            Mall.shipment
+        from Orders
+
+        inner join Item
+        on Item.id = Orders.item_id
+
+        inner join Mall
+        on Item.mall_id = Mall.id
+
+        where Orders.user_id = ? and Orders.is_basket='Y'
+        and Orders.is_purchased='N' and Orders.is_deleted='N'
+
+        GROUP BY Mall.id
+            ) Mall
+on Item.mall_id = Mall.id
+
+where Orders.user_id = ? and Orders.is_basket='Y'
+  and Orders.is_purchased='N' and Orders.is_deleted='N';";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$user_id]);
+//    $st->execute($user_id);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//배송지 추가
+function postAddress($user_id,$name,$phone,$zipcode,$address,$address_detail,$memo)
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Address (user_id,name,phone,zipcode,address,address_detail,memo) VALUES (?,?,?,?,?,?,?);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$name,$phone,$zipcode,$address,$address_detail,$memo]);
+
+    $st = null;
+    $pdo = null;
+}
+//결제
+function payment($user_id,$item1,$item2,$item3,$item4,$item5)
+{
+    $pdo = pdoSqlConnect();
+    $query1 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item1.";";
+    $query2 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item2.";";
+    $query3 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item3.";";
+    $query4 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item4.";";
+    $query5 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item5.";";
+
+    $st = $pdo->prepare($query1);
+    $st->execute([]);
+    $st = null;
+
+    if($item2 != 0){
+        $st = $pdo->prepare($query2);
+        $st->execute([]);
+        $st = null;
+    }
+
+    if($item3 != 0){
+        $st = $pdo->prepare($query3);
+        $st->execute([]);
+        $st = null;
+    }
+
+    if($item4 != 0){
+        $st = $pdo->prepare($query4);
+        $st->execute([]);
+        $st = null;
+    }
+
+    if($item5 != 0){
+        $st = $pdo->prepare($query5);
+        $st->execute([]);
+        $st = null;
+    }
+
+    $pdo = null;
 }
 //-----------------------조건식--------------------------//
 
@@ -884,6 +1094,24 @@ function isExistComment($user_id,$comment_id){
     return intval($res[0]["exist"]);
 }
 
+//기존에 있는 리뷰인지 판단
+function isExistAddress($zipcode,$address,$address_detail){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Address where zipcode = ? and address = ? and address_detail = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$zipcode,$address,$address_detail]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
 //상품에 존재하는 색깔인지 판단
 function isExistColor($item_id, $color){
 
@@ -957,6 +1185,29 @@ function isExistItemOnOrders($user_id,$item_id){
     $pdo = pdoSqlConnect();
     $query = "SELECT EXISTS(SELECT * FROM Orders where Orders.user_id = ? and Orders.item_id = ?
                 and Orders.is_deleted = 'N' and Orders.is_purchased = 'N' and Orders.is_basket='Y') as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//장바구니에 등록된 아이템이 맞는지
+function isExistOrder($user_id,$item_id){
+
+    if($item_id == 0){
+        return 1;
+    }
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Orders where Orders.user_id = ? and Orders.id = ?
+                and Orders.is_deleted = 'N' and Orders.is_purchased = 'N') as exist";
 
 
     $st = $pdo->prepare($query);
