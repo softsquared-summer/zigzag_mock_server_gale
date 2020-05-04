@@ -250,7 +250,7 @@ where Item.id = ?;";
     $st=null;
     $pdo = null;
 
-    return $res;
+    return $res[0];
 }
 
 //아이템 색깔 리스트 조회 API
@@ -659,8 +659,143 @@ function deleteComment($user_id, $comment_id)
     return;
 }
 
+//태그 추가
+function postTag($user_id,$mall_id,$tag_name)
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Tag (user_id,mall_id,name) VALUES (?,?,?);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$mall_id,$tag_name]);
+
+    $st = null;
+    $pdo = null;
+}
+
+//최근 사용한 태그 조회
+function getTagRecent($user_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT id as tag_id, name as tag_name FROM Tag where user_id = ? order by create_at desc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//태그 조회
+function getTag($user_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT
+    id as tag_id,
+    name as tag_name,
+    count(id) as tag_num
+
+FROM Tag
+
+where user_id = ? and is_deleted = 'N'
+GROUP BY id
+order by create_at;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+//태그 삭제
+function deleteTag($user_id, $tag_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Tag SET is_deleted = 'Y' where user_id = ? and id = ?;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $tag_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+
+    $st = null;
+    $pdo = null;
+
+    return;
+}
+
+//하트 추가
+function postHeart($user_id, $item_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Heart (user_id,item_id) VALUES (?,?);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id, $item_id]);
+
+    $st = null;
+    $pdo = null;
+}
+
+//하트 삭제
+function deleteHeart($user_id, $item_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Heart SET is_deleted = 'Y' where user_id = ? and item_id = ?;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+
+    $st = null;
+    $pdo = null;
+
+    return;
+}
+
+//하트 추가
+function postFavorite($user_id, $mall_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Favorite (user_id,mall_id) VALUES (?,?);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id, $mall_id]);
+
+    $st = null;
+    $pdo = null;
+}
+
+//즐겨찾기 삭제
+function deleteFavorite($user_id, $mall_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Favorite SET is_deleted = 'Y' where user_id = ? and mall_id = ?;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $mall_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+
+    $st = null;
+    $pdo = null;
+
+    return;
+}
+
 //장바구니 추가
-function postBasket($user_id, $item_id, $size,$color,$num)
+function postBasket($user_id, $item_id, $size,$color,$um)
 {
     $pdo = pdoSqlConnect();
     $query = "INSERT INTO Orders (user_id,item_id,size,color,num,is_basket ) VALUES (?,?,?,?,?,'Y');";
@@ -949,11 +1084,11 @@ function postAddress($user_id,$name,$phone,$zipcode,$address,$address_detail,$me
 function payment($user_id,$item1,$item2,$item3,$item4,$item5)
 {
     $pdo = pdoSqlConnect();
-    $query1 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item1.";";
-    $query2 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item2.";";
-    $query3 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item3.";";
-    $query4 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item4.";";
-    $query5 = "UPDATE Orders SET is_purchased = 'Y' where user_id = ".$user_id." and id = ".$item5.";";
+    $query1 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item1.";";
+    $query2 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item2.";";
+    $query3 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item3.";";
+    $query4 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item4.";";
+    $query5 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item5.";";
 
     $st = $pdo->prepare($query1);
     $st->execute([]);
@@ -1023,6 +1158,42 @@ function isExistPhone($phone){
     return intval($res[0]["exist"]);
 }
 
+//기존에 있는 쇼핑몰인지 판단
+function isExistMall($mall_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Mall where id = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$mall_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//기존에 있는 태그인지 판단
+function isExistTag($user_id,$tag_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Tag where user_id = ? and id = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$tag_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
 //기존에 있는 아이템인지 판단
 function isExistItem($item_id){
 
@@ -1033,6 +1204,42 @@ function isExistItem($item_id){
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//기존에 있는 하트인지 판단
+function isExistHeart($user_id,$item_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Heart where user_id = ? and item_id = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//기존에 있는 즐겨찾기인지 판단
+function isExistFavorite($user_id,$mall_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Favorite where user_id = ? and mall_id = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$mall_id]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -1201,14 +1408,9 @@ function isExistItemOnOrders($user_id,$item_id){
 //장바구니에 등록된 아이템이 맞는지
 function isExistOrder($user_id,$item_id){
 
-    if($item_id == 0){
-        return 1;
-    }
-
     $pdo = pdoSqlConnect();
     $query = "SELECT EXISTS(SELECT * FROM Orders where Orders.user_id = ? and Orders.id = ?
                 and Orders.is_deleted = 'N' and Orders.is_purchased = 'N') as exist";
-
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -1277,6 +1479,60 @@ function isDeletedUser($email){
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$email]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//삭제된 유저인지 판단
+function isDeletedTag($user_id, $tag_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Tag where user_id = ? and id=? and is_deleted = 'Y') as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $tag_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//삭제된 하트인지 판단
+function isDeletedHeart($user_id, $item_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Heart where user_id = ? and item_id=? and is_deleted = 'Y') as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $item_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+//삭제된 즐겨찾기인지 판단
+function isDeletedFavorite($user_id, $mall_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Favorite where user_id = ? and mall_id=? and is_deleted = 'Y') as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $mall_id]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -1402,6 +1658,34 @@ function recreateBasket($user_id, $item_id, $size,$color,$num)
 
 }
 
+//하트 삭제 물품 재등록
+function recreateHeart($user_id, $item_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Heart SET is_deleted = 'N' where user_id = ? and item_id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item_id]);
+
+    $st = null;
+    $pdo = null;
+
+}
+
+//즐겨찾기 삭제 물품 재등록
+function recreateFavorite($user_id, $mall_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Favorite SET is_deleted = 'N' where user_id = ? and mall_id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$mall_id]);
+
+    $st = null;
+    $pdo = null;
+
+}
+
 //이메일을 id값으로 변환
 function EmailToID($email){
 
@@ -1432,6 +1716,9 @@ function categoryDetailTextToCode($text){
         case "코트":
             return 103;
             break;
+        case "점퍼":
+            return 104;
+            break;
         case "티셔츠":
             return 201;
             break;
@@ -1440,6 +1727,9 @@ function categoryDetailTextToCode($text){
             break;
         case "셔츠/남방":
             return 203;
+            break;
+        case "니트/스웨터":
+            return 204;
             break;
         case "미니원피스":
             return 301;
@@ -1450,6 +1740,9 @@ function categoryDetailTextToCode($text){
         case "롱원피스":
             return 303;
             break;
+        case "투피스/세트":
+            return 304;
+            break;
         case "일자바지":
             return 401;
             break;
@@ -1458,6 +1751,18 @@ function categoryDetailTextToCode($text){
             break;
         case "반바지":
             return 403;
+            break;
+        case "와이드팬츠":
+            return 404;
+            break;
+        case "미니스커트":
+            return 501;
+            break;
+        case "미디스커트":
+            return 502;
+            break;
+        case "롱스커트":
+            return 503;
             break;
     }
 }
@@ -1476,6 +1781,9 @@ function categoryTextToCode($text){
             break;
         case "바지":
             return 400;
+            break;
+        case "스커트":
+            return 500;
             break;
         default:
             return 0;

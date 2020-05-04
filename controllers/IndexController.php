@@ -763,6 +763,502 @@ try {
             break;
 
         /*
+* API No. 11
+* API Name : 쇼핑몰 태그 설정 API
+* 마지막 수정 날짜 : 19.05.04
+*/
+        case "postTag":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //쇼핑몰 아이디 비었을 때 : post variation 매뉴얼
+            if(empty($req->mall_id)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "쇼핑몰 아이디를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $mall_id = $req->mall_id;
+                //쇼핑몰 아이디 타입 체크
+                if(nl2br(gettype($mall_id)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //쇼핑몰 아이디 존재성 체크
+                    if(!isExistMall($mall_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이디입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            //태그 이름 비었을 때
+            if(empty($req->tag_name)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "태그 이름을 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $tag_name = $req->tag_name;
+                //쇼핑몰 아이디 타입 체크
+                if(nl2br(gettype($tag_name)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            $res->result = postTag($user_id,$mall_id,$tag_name);
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "태그가 추가되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+* API No. 12
+* API Name : 최근 사용한 태그 리스트 조회 API
+* 마지막 수정 날짜 : 20.05.04
+*/
+        case "getTagRecent":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->result = getTagRecent($user_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "최근 사용한 태그 내역입니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+* API No. 13
+* API Name : 태그 리스트 조회 API
+* 마지막 수정 날짜 : 20.05.04
+*/
+        case "getTag":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->result = getTag($user_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "최근 사용한 태그 내역입니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+* API No. 14
+* API Name : 태그 삭제 API
+* 마지막 수정 날짜 : 20.05.04
+*/
+        case "deleteTag":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            if(empty($_GET["tag_id"])){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "태그 아이디를 입력해주세요";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $tag_id = $_GET["tag_id"];
+            }
+
+            //입력받은 값 타입 체크
+            if(nl2br(gettype($tag_id)) != "string"){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "잘못된 타입입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }else{
+                //존재하는 태그인지 확인
+                if(!isExistTag($user_id,$tag_id)){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "존재하지 않는 태그입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            //이미 삭제된 태그인지
+            if(isDeletedTag($user_id,$tag_id)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 태그입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->result = deleteTag($user_id, $tag_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "선택하신 태그가 삭제되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+* API No. 15
+* API Name : 찜하기 API
+* 마지막 수정 날짜 : 19.05.04
+*/
+        case "postHeart":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //쇼핑몰 아이디 비었을 때 : post variation 매뉴얼
+            if(empty($req->item_id)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "아이템 아이디를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $item_id = $req->item_id;
+                //쇼핑몰 아이디 타입 체크
+                if(nl2br(gettype($item_id)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //쇼핑몰 아이디 존재성 체크
+                    if(!isExistItem($item_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            //찜하기 되어있는 경우, 안되어있는 경우, 했다가 취소했다가 다시 한 경우 3개로 나누기
+
+            //처음으로 찜하기
+            if(!isExistHeart($user_id, $item_id)){
+                $res->result = postHeart($user_id, $item_id);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "찜한 아이템에 추가했어요";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else{
+                //찜 삭제된 것 다시 하기
+                if(isDeletedHeart($user_id, $item_id)){
+                    $res->result = recreateHeart($user_id, $item_id);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "찜한 아이템에 추가했어요";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+                else{
+                    $res->result = deleteHeart($user_id, $item_id);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "찜한 아이템에서 삭제했어요";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+            }
+
+        /*
+* API No. 17
+* API Name : 즐겨찾기하기 API
+* 마지막 수정 날짜 : 19.05.04
+*/
+        case "postFavorite":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //쇼핑몰 아이디 비었을 때 : post variation 매뉴얼
+            if(empty($req->mall_id)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "쇼핑몰 아이디를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $mall_id = $req->mall_id;
+                //쇼핑몰 아이디 타입 체크
+                if(nl2br(gettype($mall_id)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //쇼핑몰 아이디 존재성 체크
+                    if(!isExistMall($mall_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            //찜하기 되어있는 경우, 안되어있는 경우, 했다가 취소했다가 다시 한 경우 3개로 나누기
+
+            //처음으로 찜하기
+            if(!isExistFavorite($user_id, $mall_id)){
+                $res->result = postFavorite($user_id, $mall_id);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "즐겨찾기에 등록되었습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else{
+                //찜 삭제된 것 다시 하기
+                if(isDeletedFavorite($user_id, $mall_id)){
+                    $res->result = recreateFavorite($user_id, $mall_id);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "즐겨찾기에 등록되었습니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+                else{
+                    $res->result = deleteFavorite($user_id, $mall_id);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "즐겨찾기에서 삭제되었습니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+            }
+
+        /*
 * API No. 19
 * API Name : 장바구니 추가 API
 * 마지막 수정 날짜 : 19.05.03
@@ -1348,51 +1844,122 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
-            else{$item1 = $req->order_id1;}
+            else{
+                $item1 = $req->order_id1;
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item1)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistOrder($user_id,$item1)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템1입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
 
             //나머지 아이템은 빈칸일 시 공백으로 넘기기
             if(empty($req->order_id2)){$item2 = 0;}
-            else{$item2 = $req->order_id2;}
-
-            if(empty($req->order_id3)){$item3 = 0;}
-            else{$item3 = $req->order_id3;}
-
-            if(empty($req->order_id4)){$item4 = 0;}
-            else{$item4 = $req->order_id4;}
-
-            if(empty($req->order_id5)){$item5 = 0;}
-            else{$item5 = $req->order_id5;}
-
-            //item 타입 및 존재 여부 체크
-            if(nl2br(gettype($item1)) != "integer"
-            or nl2br(gettype($item2)) != "integer"
-            or nl2br(gettype($item3)) != "integer"
-            or nl2br(gettype($item4)) != "integer"
-            or nl2br(gettype($item5)) != "integer"){
-                $res->is_success = FALSE;
-                $res->code = 201;
-                $res->message = "잘못된 타입입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                return;
-            }else{
-                //존재하는 아이템 아이디인지 확인
-                if(!isExistOrder($user_id,$item1)
-                or !isExistOrder($user_id,$item2)
-                or !isExistOrder($user_id,$item3)
-                or !isExistOrder($user_id,$item4)
-                or !isExistOrder($user_id,$item5)){
+            else{
+                $item2 = $req->order_id2;
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item2)) != "integer"){
                     $res->is_success = FALSE;
                     $res->code = 201;
-                    $res->message = "존재하지 않는 아이템입니다.";
+                    $res->message = "잘못된 타입입니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistOrder($user_id,$item2)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템2입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
                 }
             }
+
+            if(empty($req->order_id3)){$item3 = 0;}
+            else{
+                $item3 = $req->order_id3;
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item3)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistOrder($user_id,$item3)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템3입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($req->order_id4)){$item4 = 0;}
+            else{
+                $item4 = $req->order_id4;
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item4)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistOrder($user_id,$item4)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템4입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($req->order_id5)){$item5 = 0;}
+            else{
+                $item5 = $req->order_id5;
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item5)) != "integer"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistOrder($user_id,$item5)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템5입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            //입력받은 아이템끼리 중복되면 안됨
 
             $res->result = payment($user_id,$item1,$item2,$item3,$item4,$item5);
             $res->isSuccess = TRUE;
             $res->code = 100;
-            $res->message = "장바구니 추가가 완료되었습니다.";
+            $res->message = "결제가 완료되었습니다.";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 //test sample
