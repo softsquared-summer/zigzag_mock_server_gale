@@ -104,6 +104,12 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     //24. 주문 동의 확인 및 결제 API
     $r->addRoute('POST', '/payment', ['IndexController', 'payment']);
 
+    //25. 주문 완료 리스트 조회 API
+    $r->addRoute('GET', '/orders', ['IndexController', 'getOrders']);
+
+    //26. 주문 완료 상세 조회 API
+    $r->addRoute('GET', '/orders/{orderID}', ['IndexController', 'getOrderDetail']);
+
     //test sample
 //    $r->addRoute('GET', '/', ['IndexController', 'index']);
 //    $r->addRoute('GET', '/test', ['IndexController', 'test']);

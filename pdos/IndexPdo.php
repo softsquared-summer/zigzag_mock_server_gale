@@ -1477,44 +1477,127 @@ function postAddress($user_id,$name,$phone,$zipcode,$address,$address_detail,$me
     $pdo = null;
 }
 //결제
-function payment($user_id,$item1,$item2,$item3,$item4,$item5)
+function paymentBank($user_id,$item1,$item2,$item3,$item4,$item5)
 {
     $pdo = pdoSqlConnect();
-    $query1 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item1.";";
-    $query2 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item2.";";
-    $query3 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item3.";";
-    $query4 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item4.";";
-    $query5 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item5.";";
+    $query_order1 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item1.";";
+    $query_completion1 = "INSERT INTO Completion (user_id, order_id1, status) VALUES (?,?,'002');";
+    $query1 = $query_order1.' '.$query_completion1;
 
-    $st = $pdo->prepare($query1);
-    $st->execute([]);
-    $st = null;
+    $query_order2 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item2.";";
+    $query_completion2 = "INSERT INTO Completion (order_id2) VALUES (?);";
+    $query2 = $query_order2.' '.$query_completion2;
 
-    if($item2 != 0){
-        $st = $pdo->prepare($query2);
-        $st->execute([]);
+    $query_order3 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item3.";";
+    $query_completion3 = "INSERT INTO Completion (order_id3) VALUES (?);";
+    $query3 = $query_order3.' '.$query_completion3;
+
+    $query_order4 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item4.";";
+    $query_completion4 = "INSERT INTO Completion (order_id4) VALUES (?);";
+    $query4 = $query_order4.' '.$query_completion4;
+
+    $query_order5 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item5.";";
+    $query_completion5 = "INSERT INTO Completion (order_id5) VALUES (?);";
+    $query5 = $query_order5.' '.$query_completion5;
+
+    if($item5 != -5){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4.' '.$query5);
+        $st->execute([$user_id,$item1,$item2,$item3,$item4,$item5]);
         $st = null;
     }
-
-    if($item3 != 0){
-        $st = $pdo->prepare($query3);
-        $st->execute([]);
+    else if($item4 != -4){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4);
+        $st->execute([$user_id,$item1,$item2,$item3,$item4]);
         $st = null;
     }
-
-    if($item4 != 0){
-        $st = $pdo->prepare($query4);
-        $st->execute([]);
+    else if($item3 != -3){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3);
+        $st->execute([$user_id,$item1,$item2,$item3]);
         $st = null;
     }
-
-    if($item5 != 0){
-        $st = $pdo->prepare($query5);
-        $st->execute([]);
+    else if($item2 != -2){
+        $st = $pdo->prepare($query1.' '.$query2);
+        $st->execute([$user_id,$item1,$item2]);
+        $st = null;
+    }
+    else{
+        $st = $pdo->prepare($query1);
+        $st->execute([$user_id,$item1]);
         $st = null;
     }
 
     $pdo = null;
+}
+
+//결제
+function paymentNoneBank($user_id,$item1,$item2,$item3,$item4,$item5)
+{
+    $pdo = pdoSqlConnect();
+    $query_order1 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item1.";";
+    $query_completion1 = "INSERT INTO Completion (user_id, order_id1, status) VALUES (?,?,'002');";
+    $query1 = $query_order1.' '.$query_completion1;
+
+    $query_order2 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item2.";";
+    $query_completion2 = "INSERT INTO Completion (order_id2) VALUES (?);";
+    $query2 = $query_order2.' '.$query_completion2;
+
+    $query_order3 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item3.";";
+    $query_completion3 = "INSERT INTO Completion (order_id3) VALUES (?);";
+    $query3 = $query_order3.' '.$query_completion3;
+
+    $query_order4 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item4.";";
+    $query_completion4 = "INSERT INTO Completion (order_id4) VALUES (?);";
+    $query4 = $query_order4.' '.$query_completion4;
+
+    $query_order5 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item5.";";
+    $query_completion5 = "INSERT INTO Completion (order_id5) VALUES (?);";
+    $query5 = $query_order5.' '.$query_completion5;
+
+    if($item5 != -5){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4.' '.$query5);
+        $st->execute([$user_id,$item1,$item2,$item3,$item4,$item5]);
+        $st = null;
+    }
+    else if($item4 != -4){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4);
+        $st->execute([$user_id,$item1,$item2,$item3,$item4]);
+        $st = null;
+    }
+    else if($item3 != -3){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3);
+        $st->execute([$user_id,$item1,$item2,$item3]);
+        $st = null;
+    }
+    else if($item2 != -2){
+        $st = $pdo->prepare($query1.' '.$query2);
+        $st->execute([$user_id,$item1,$item2]);
+        $st = null;
+    }
+    else{
+        $st = $pdo->prepare($query1);
+        $st->execute([$user_id,$item1]);
+        $st = null;
+    }
+
+    $pdo = null;
+}
+
+//주문 완료 조회
+function getOrders($user_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT * FROM Test WHERE no = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
 }
 //-----------------------조건식--------------------------//
 
@@ -2213,6 +2296,90 @@ function categoryTextToCode($text){
             break;
         default:
             return 0;
+            break;
+    }
+}
+
+//status 코드 텍스트 변환
+function statusCodeToText($code){
+    switch ($code){
+        case "001":
+            return "입금대기";
+            break;
+        case "002":
+            return "주문대기";
+            break;
+        case "003":
+            return "주문승인";
+            break;
+        case "004":
+            return "상품집계";
+            break;
+        case "005":
+            return "출고준비";
+            break;
+        case "006":
+            return "배송중";
+            break;
+        case "007":
+            return "배송완료";
+            break;
+        case "101":
+            return "반품신청대기";
+            break;
+        case "102":
+            return "반품진행중";
+            break;
+        case "103":
+            return "반품완료";
+            break;
+        case "999":
+            return "주문취소";
+            break;
+        default:
+            return "잘못된 코드";
+            break;
+    }
+}
+
+//status 코드 텍스트 변환
+function statusToComment($code){
+    switch ($code){
+        case "001" or "입금대기":
+            return "예브게 포장해서 보내드릴게요! 아래 계좌로 입금해주세요:)";
+            break;
+        case "002" or "주문대기":
+            return "상품이 주문 대기중입니다.";
+            break;
+        case "003" or "주문승인":
+            return "상품이 주문승인되었습니다.";
+            break;
+        case "004" or "상품집계":
+            return "상품이 집계 중입니다.";
+            break;
+        case "005" or "출고준비":
+            return "상품이 출고 준비 중입니다.";
+            break;
+        case "006" or "배송중":
+            return "상품이 배송중입니다.";
+            break;
+        case "007" or "배송완료":
+            return "상품 배송이 완료되었습니다.";
+            break;
+        case "101" or "반품신청대기":
+            return "반품신청대기중입니다.";
+            break;
+        case "102" or "반품진행중":
+            return "반품이 진행중입니다.";
+            break;
+        case "103" or "반품완료":
+            return "반품이 완료되었습니다.";
+            break;
+        case "999" or "주문취소":
+            return "주문이 취소되었습니다.";
+            break;
+        default:
+            return "잘못된 코드";
             break;
     }
 }

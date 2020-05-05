@@ -1711,7 +1711,7 @@ try {
                 }
                 else{
                     //변수 존재성 체크
-                    if(isExistItem($item_id)){
+                    if(isExistItemOnOrders($user_id,$item_id)){
                         $res->is_success = FALSE;
                         $res->code = 201;
                         $res->message = "이미 존재하는 아이디입니다.";
@@ -2459,7 +2459,7 @@ try {
             }
 
             //나머지 아이템은 빈칸일 시 공백으로 넘기기
-            if(empty($req->order_id2)){$order2 = 0;}
+            if(empty($req->order_id2)){$order2 = -2;}
             else{
                 $order2 = $req->order_id2;
                 //item 타입 및 존재 여부 체크
@@ -2481,7 +2481,7 @@ try {
                 }
             }
 
-            if(empty($req->order_id3)){$order3 = 0;}
+            if(empty($req->order_id3)){$order3 = -3;}
             else{
                 $order3 = $req->order_id3;
                 //item 타입 및 존재 여부 체크
@@ -2503,7 +2503,7 @@ try {
                 }
             }
 
-            if(empty($req->order_id4)){$order4 = 0;}
+            if(empty($req->order_id4)){$order4 = -4;}
             else{
                 $order4 = $req->order_id4;
                 //item 타입 및 존재 여부 체크
@@ -2525,7 +2525,7 @@ try {
                 }
             }
 
-            if(empty($req->order_id5)){$order5 = 0;}
+            if(empty($req->order_id5)){$order5 = -5;}
             else{
                 $order5 = $req->order_id5;
                 //item 타입 및 존재 여부 체크
@@ -2556,10 +2556,144 @@ try {
                 return;
             }
 
+            if(empty($_GET["type"])){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "입금방식을 입력해주세요";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $type = $_GET["type"];
+                //item 타입 및 존재 여부 체크
+                if($type == "bank"){
+                    $res->result = paymentBank($user_id,$order1,$order2,$order3,$order4,$order5);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "결제가 완료되었습니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }else if($type == "none_bank"){
+                    $res->result = paymentNoneBank($user_id,$order1,$order2,$order3,$order4,$order5);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "결제가 완료되었습니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+                else{
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 입력입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
             $res->result = payment($user_id,$order1,$order2,$order3,$order4,$order5);
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "결제가 완료되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+* API No. 25
+* API Name : 주문 완료 리스트 조회 API
+* 마지막 수정 날짜 : 20.05.02
+*/
+        case "getOrders":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->result = getOrders($user_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "주문 완료 조회가 완료되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+* API No. 26
+* API Name : 주문 완료 상세 조회 API
+* 마지막 수정 날짜 : 20.05.05
+*/
+        case "getOrderDetail":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->result = getOrderDetail($user_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "주문 완료 조회가 완료되었습니다.";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 //test sample
