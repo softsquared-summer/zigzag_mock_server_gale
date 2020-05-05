@@ -110,6 +110,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     //26. 주문 완료 상세 조회 API
     $r->addRoute('GET', '/orders/{orderID}', ['IndexController', 'getOrderDetail']);
 
+//    //27. 주문 취소 API
+//    $r->addRoute('DELETE', '/order', ['IndexController', 'deleteOrder']);
+
     //test sample
 //    $r->addRoute('GET', '/', ['IndexController', 'index']);
 //    $r->addRoute('GET', '/test', ['IndexController', 'test']);

@@ -97,7 +97,11 @@ Item.name as item_name,
 
 concat(Item.discount,'%') as discount,
 
-concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price
+if(
+    Item.price<100000,
+    concat(substr(Item.price,1,2),',',substr(Item.price,-3)),
+    concat(substr(Item.price,1,3),',',substr(Item.price,-3))
+    ) as price
 
 from Item
 
@@ -186,7 +190,11 @@ as is_heart,
 
 concat(Item.discount,'%') as discount,
 
-concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price
+if(
+    Item.price<100000,
+    concat(substr(Item.price,1,2),',',substr(Item.price,-3)),
+    concat(substr(Item.price,1,3),',',substr(Item.price,-3))
+    ) as price
 
 from Item
 
@@ -1099,7 +1107,11 @@ Item.name as item_name,
 
 concat(Item.discount,'%') as discount,
 
-concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price
+if(
+    Item.price<100000,
+    concat(substr(Item.price,1,2),',',substr(Item.price,-3)),
+    concat(substr(Item.price,1,3),',',substr(Item.price,-3))
+    ) as price
 
 from Item
 
@@ -1245,7 +1257,11 @@ Orders.color as color,
 
 Orders.num as num,
 
-concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price,
+if(
+    Item.price<100000,
+    concat(substr(Item.price,1,2),',',substr(Item.price,-3)),
+    concat(substr(Item.price,1,3),',',substr(Item.price,-3))
+    ) as price,
 
 Mall.shipment as ship
 
@@ -1319,149 +1335,139 @@ function deleteBaskets($user_id, $item_id)
     return;
 }
 
-//직접구매 총액 계산
-function totalPay($user_id)
+//총액 계산
+function totalPay($item1,$item2,$item3,$item4,$item5)
 {
     $pdo = pdoSqlConnect();
-    $query = "
-select
-ifnull(
-    sum(Item.price * Orders.num),
-    0) as price,
 
-ifnull(
-    round(sum(
-        if(
-            Mall.shipment = 0,
-            Mall.shipment,
-            Mall.shipment / Mall.mall_count
-            )
-        )),
-    0) as ship,
-    
-ifnull(
-    sum(Item.price * Orders.num) + 
-    round(sum(
-        if(
-            Mall.shipment = 0,
-            Mall.shipment,
-            Mall.shipment / Mall.mall_count
-            )
-        )),
-    0) as total
-
-from Orders
-
-inner join Item
-on Item.id = Orders.item_id
-
-inner join (
-    SELECT
-        count(
-            Mall.id
-            ) as mall_count,
-            Mall.id,
-            Mall.shipment
-        from Orders
-
-        inner join Item
-        on Item.id = Orders.item_id
-
-        inner join Mall
-        on Item.mall_id = Mall.id
-
-        where Orders.user_id = ? and Orders.is_basket='N'
-        and Orders.is_purchased='N' and Orders.is_deleted='N'
-
-        GROUP BY Mall.id
-            ) Mall
-on Item.mall_id = Mall.id
-
-where Orders.user_id = ? and Orders.is_basket='Y'
-  and Orders.is_purchased='N' and Orders.is_deleted='N';";
-
+    $query = "select Item.price as price,Mall.shipment as ship from Item inner join Mall on Mall.id = Item.mall_id 
+                    where Item.id=?;";
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
-    $st->execute([$user_id,$user_id]);
+    $st->execute([$item1]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
-
+    $res_item1 = $st->fetchAll();
     $st = null;
-    $pdo = null;
 
-    return $res[0];
-}
+    if($item2 == -2){
+        $res_item2[][] = (Object)Array();
+        $res_item2[0]['price'] = 0;
+        $res_item2[0]['ship'] = 0;
+    }
+    else{
+        $st = $pdo->prepare($query);
+        //    $st->execute([$param,$param]);
+        $st->execute([$item2]);
+        $st->setFetchMode(PDO::FETCH_ASSOC);
+        $res_item2 = $st->fetchAll();
+        $st = null;
+    }
 
-//장바구니 총액 계산
-function totalPayBasket($user_id)
-{
-    $pdo = pdoSqlConnect();
-    $query = "select
-ifnull(
-    sum(Item.price * Orders.num),
-    0) as price,
+    if($item3 == -3){
+        $res_item3[][] = (Object)Array();
+        $res_item3[0]['price'] = 0;
+        $res_item3[0]['ship'] = 0;
+    }
+    else{
+        $st = $pdo->prepare($query);
+        //    $st->execute([$param,$param]);
+        $st->execute([$item3]);
+        $st->setFetchMode(PDO::FETCH_ASSOC);
+        $res_item3 = $st->fetchAll();
+        $st = null;
+    }
 
-ifnull(
-    round(sum(
-        if(
-            Mall.shipment = 0,
-            Mall.shipment,
-            Mall.shipment / Mall.mall_count
-            )
-        )),
-    0) as ship,
-    
-ifnull(
-    sum(Item.price * Orders.num) + 
-    round(sum(
-        if(
-            Mall.shipment = 0,
-            Mall.shipment,
-            Mall.shipment / Mall.mall_count
-            )
-        )),
-    0) as total
+    if($item4 == -4){
+        $res_item4[][] = (Object)Array();
+        $res_item4[0]['price'] = 0;
+        $res_item4[0]['ship'] = 0;
+    }
+    else{
+        $st = $pdo->prepare($query);
+        //    $st->execute([$param,$param]);
+        $st->execute([$item4]);
+        $st->setFetchMode(PDO::FETCH_ASSOC);
+        $res_item4 = $st->fetchAll();
+        $st = null;
+    }
 
-from Orders
+    if($item5 == -5){
+        $res_item5[][] = (Object)Array();
+        $res_item5[0]['price'] = 0;
+        $res_item5[0]['ship'] = 0;
+    }
+    else{
+        $st = $pdo->prepare($query);
+        //    $st->execute([$param,$param]);
+        $st->execute([$item5]);
+        $st->setFetchMode(PDO::FETCH_ASSOC);
+        $res_item5 = $st->fetchAll();
+        $st = null;
+    }
 
-inner join Item
-on Item.id = Orders.item_id
+    $price_raw = $res_item1[0]['price'] +
+             $res_item2[0]['price'] +
+             $res_item3[0]['price'] +
+             $res_item4[0]['price'] +
+             $res_item5[0]['price'];
+    $ship_raw = $res_item1[0]['ship'] +
+            $res_item2[0]['ship'] +
+            $res_item3[0]['ship'] +
+            $res_item4[0]['ship'] +
+            $res_item5[0]['ship'];
+    $total_raw = $price_raw + $ship_raw;
 
-inner join (
-    SELECT
-        count(
-            Mall.id
-            ) as mall_count,
-            Mall.id,
-            Mall.shipment
-        from Orders
 
-        inner join Item
-        on Item.id = Orders.item_id
+    switch ($price_raw){
+        case 0:
+            $price = "0원";
+            break;
+        case $price_raw < 100000:
+            $price = substr($price_raw,0,2).",".substr($price_raw,-3)."원";
+            break;
+        default:
+            $price = substr($price_raw,0,3).",".substr($price_raw,-3)."원";
+            break;
+    }
 
-        inner join Mall
-        on Item.mall_id = Mall.id
+    switch ($ship_raw){
+            case 0:
+                $ship = "0원";
+                break;
+            case $ship_raw < 10000:
+                $ship = substr($ship_raw,0,1).",".substr($ship_raw,-3)."원";
+                break;
+            default:
+                $ship = substr($ship_raw,0,2).",".substr($ship_raw,-3)."원";
+                break;
+        }
 
-        where Orders.user_id = ? and Orders.is_basket='Y'
-        and Orders.is_purchased='N' and Orders.is_deleted='N'
+    switch ($total_raw) {
+        case 0:
+            $total = "0원";
+            break;
+        case $total_raw < 100000:
+            $total = substr($total_raw,0,2).",".substr($total_raw,-3)."원";
+            break;
+        default:
+            $total = substr($total_raw,0,3).",".substr($total_raw,-3)."원";
+            break;
+    }
 
-        GROUP BY Mall.id
-            ) Mall
-on Item.mall_id = Mall.id
-
-where Orders.user_id = ? and Orders.is_basket='Y'
-  and Orders.is_purchased='N' and Orders.is_deleted='N';";
-
+    $query = "select ' ' as price, ' ' as ship, ' ' as total;";
     $st = $pdo->prepare($query);
-    $st->execute([$user_id,$user_id]);
-//    $st->execute($user_id);
+    //    $st->execute([$param,$param]);
+    $st->execute([$item1]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
-
     $st = null;
-    $pdo = null;
 
-    return $res;
+    $res[0]['price'] = $price;
+    $res[0]['ship'] = $ship;
+    $res[0]['total'] = $total;
+
+    $pdo = null;
+    return $res[0];
 }
 
 //배송지 추가
@@ -1536,7 +1542,7 @@ concat(
         )
     )  as date,
 
-Orders.id as order_id,
+Completion.id as completion_id,
 ' ' as list
 from Completion
 
@@ -1559,6 +1565,8 @@ where Orders.user_id = ?;";
 
     $query_body = "select
 
+Orders.id as order_id,
+
 Item.id as item_id,
 
 Mall.name as mall_name,
@@ -1573,9 +1581,15 @@ Orders.color as color,
 
 Orders.num as num,
 
-concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price,
+if(
+    Item.price<100000,
+    concat(substr(Item.price,1,2),',',substr(Item.price,-3),'원'),
+    concat(substr(Item.price,1,3),',',substr(Item.price,-3),'원')
+    ) as price,
 
-Mall.shipment as ship
+Mall.shipment as ship,
+
+Completion.status as status
 
 from Orders
 
@@ -1612,6 +1626,10 @@ and
         $st_body->execute([$user_id,$date[$i]]);
         $st_body->setFetchMode(PDO::FETCH_ASSOC);
         $res_body = $st_body->fetchAll();
+    }
+
+    for($i=0;$i<count($res_num);$i++){
+        $res_body[$i]['status'] = statusCodeToText($res_body[$i]['status']);
     }
 
     $item_id[] = (Object)Array();
@@ -1672,7 +1690,7 @@ concat(
         )
     )  as date,
 
-Orders.id as order_id,
+Completion.id as completion_id,
 ' ' as list
 from Completion
 
@@ -1695,6 +1713,8 @@ where Orders.user_id = ? and Orders.id = ?;";
 
     $query_body = "select
 
+Orders.id as order_id,
+
 Item.id as item_id,
 
 Mall.name as mall_name,
@@ -1709,9 +1729,15 @@ Orders.color as color,
 
 Orders.num as num,
 
-concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price,
+if(
+    Item.price<100000,
+    concat(substr(Item.price,1,2),',',substr(Item.price,-3),'원'),
+    concat(substr(Item.price,1,3),',',substr(Item.price,-3),'원')
+    ) as price,
 
-Mall.shipment as ship
+Mall.shipment as ship,
+
+Completion.status as status
 
 from Orders
 
@@ -1748,6 +1774,10 @@ and
         $st_body->execute([$user_id,$order_id,$date[$i]]);
         $st_body->setFetchMode(PDO::FETCH_ASSOC);
         $res_body = $st_body->fetchAll();
+    }
+
+    for($i=0;$i<count($res_num);$i++){
+        $res_body[$i]['status'] = statusCodeToText($res_body[$i]['status']);
     }
 
     $item_id[] = (Object)Array();
@@ -1787,6 +1817,82 @@ where Item.id = ?;";
     $pdo = null;
 
     return $res;
+}
+
+//주문 완료 상세 조회
+function getOrderDetail($user_id,$completion_id)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select
+Completion.status as status,
+Completion.status as status_text,
+'기업은행 04797044697382' as account,
+'지그재그(크로키닷컴(주))' as host,
+concat(
+    year(Completion.update_at),
+    '년 ',
+    if(
+        month(date_add(Completion.update_at,INTERVAL 3 DAY))<10,
+        concat(0,month(date_add(Completion.update_at,INTERVAL 3 DAY))),
+        month(date_add(Completion.update_at,INTERVAL 3 DAY))
+        ),
+    '월 ',
+        if(
+        day(date_add(Completion.update_at,INTERVAL 3 DAY))<10,
+        concat(0,day(date_add(Completion.update_at,INTERVAL 3 DAY))),
+        day(date_add(Completion.update_at,INTERVAL 3 DAY))
+        ),
+    '일까지'
+    ) as date,
+if(
+    sum(Item.price)<100000,
+    concat(substr(sum(Item.price),1,2),',',substr(sum(Item.price),-3),'원'),
+    concat(substr(sum(Item.price),1,3),',',substr(sum(Item.price),-3),'원')
+    ) as price
+from Completion
+
+inner join Orders on Orders.completion_id = Completion.id
+inner join Item on Item.id = Orders.item_id
+
+where Orders.user_id = ? and Completion.id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$completion_id]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+}
+
+//주문 취소 : 더 만들어야함
+function deleteOrder($user_id, $order_id)
+{
+    $pdo = pdoSqlConnect();
+
+    $query = "UPDATE Orders SET is_deleted = 'Y', is_basket = 'N', is_purchased = 'N' where user_id = ? and id = ?;";
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $order_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $query = null;
+    $st = null;
+
+    $query = "UPDATE Completion SET is_deleted = 'Y', is_basket = 'N' where user_id = ? and id = ?;";
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id, $order_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $query = null;
+    $st = null;
+
+
+    $pdo = null;
+
+    return;
 }
 //-----------------------조건식--------------------------//
 
@@ -1987,6 +2093,24 @@ function isExistAddress($zipcode,$address,$address_detail){
     return intval($res[0]["exist"]);
 }
 
+//기존에 있는 리뷰인지 판단
+function isExistCompletion($user_id,$completion_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Completion where user_id = ? and id = ?) as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$completion_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
 //상품에 존재하는 색깔인지 판단
 function isExistColor($item_id, $color){
 
@@ -2094,7 +2218,7 @@ function isPurchaseItem($user_id,$order_id){
 
 
 //장바구니에 등록된 아이템이 맞는지
-function isExistOrder($user_id,$item_id){
+function isExistOrder($user_id,$order_id){
 
     $pdo = pdoSqlConnect();
     $query = "SELECT EXISTS(SELECT * FROM Orders where Orders.user_id = ? and Orders.id = ?
@@ -2102,7 +2226,7 @@ function isExistOrder($user_id,$item_id){
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
-    $st->execute([$user_id,$item_id]);
+    $st->execute([$user_id,$order_id]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 

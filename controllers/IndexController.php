@@ -2154,41 +2154,138 @@ try {
                 return;
             }
 
-            //입력받은 값 체크
-            if(empty($_GET["basket"])){
-                $res->result = totalPay($user_id);
-                $res->is_success = TRUE;
-                $res->code = 100;
-                $res->message = "총액 계산이 완료되었습니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }else{
-                $basket = $_GET["basket"];
-            }
-
-            if($basket == "Y"){
-                $res->result = totalPayBasket($user_id);
-                $res->is_success = TRUE;
-                $res->code = 100;
-                $res->message = "총액 계산이 완료되었습니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            else if($basket == 'N'){
-                $res->result = totalPay($user_id);
-                $res->is_success = TRUE;
-                $res->code = 100;
-                $res->message = "총액 계산이 완료되었습니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            else{
+            //아이템 선택 하나도 안 되어있을 시 결제 막기
+            if(empty($_GET["item_id1"])){
                 $res->is_success = FALSE;
                 $res->code = 201;
-                $res->message = "잘못된 입력입니다.";
+                $res->message = "구매할 아이템을 선택해주세요.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
+            else{
+                $item1 = $_GET["item_id1"];
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item1)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistItem($item1)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템1입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            //나머지 아이템은 빈칸일 시 공백으로 넘기기
+            if(empty($_GET["item_id2"])){$item2 = -2;}
+            else{
+                $item2 = $_GET["item_id2"];
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item2)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistItem($item2)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템2입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($_GET["item_id3"])){$item3 = -3;}
+            else{
+                $item3 = $_GET["item_id3"];
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item3)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistItem($item3)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템3입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($_GET["item_id4"])){$item4 = -4;}
+            else{
+                $item4 = $_GET["item_id4"];
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item4)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistItem($item4)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템4입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(empty($_GET["item_id5"])){$item5 = -5;}
+            else{
+                $item5 = $_GET["item_id5"];
+                //item 타입 및 존재 여부 체크
+                if(nl2br(gettype($item5)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }else{
+                    //존재하는 아이템 아이디인지 확인
+                    if(!isExistItem($item5)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 아이템5입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            if(!isAllDifferent($item1,$item2,$item3,$item4,$item5)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "중복되는 아이템이 존재합니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->result = totalPay((int)$item1,(int)$item2,(int)$item3,(int)$item4,(int)$item5);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "총액 계산이 완료되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
 
         /*
 * API No. 23
@@ -2718,10 +2815,120 @@ try {
                 return;
             }
 
-            $res->result = getOrderDetail($user_id);
+            //쿼리스트링 태그값 가져오기
+            if(empty($vars["order_id"])){
+                $res->result = getOrders($user_id);
+                $res->is_success = TRUE;
+                $res->code = 100;
+                $res->message = "주문 완료 조회가 완료되었습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else{
+                $completion_id = $vars["completionID"];
+                //쇼핑몰 아이디 타입 체크
+                if(nl2br(gettype($completion_id)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //쇼핑몰 아이디 존재성 체크
+                    if(!isExistCompletion($user_id,$completion_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "주문 완료 내역이 존재하지 않습니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            $res->result = getOrderDetail($user_id,$completion_id);
             $res->is_success = TRUE;
             $res->code = 100;
             $res->message = "주문 완료 조회가 완료되었습니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+* API No. 27
+* API Name : 주문 취소 API
+* 마지막 수정 날짜 : 20.05.03
+*/
+        case "deleteOrder":
+            http_response_code(200);
+
+            //토큰 가져오기
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            //헤더 유효 검사
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            //입력받은 이메일 id로 변환
+            $email = getDataByJWToken($jwt, JWT_SECRET_KEY)->id;
+            $user_id = EmailToID($email);
+
+            //이미 존재하는 회원인지 검토
+            if(!isExistEmail($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "존재하지 않는 회원입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //삭제 유저 검사
+            if(isDeletedUser($email)){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "이미 삭제된 유저입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            if(empty($_GET["order_id"])){
+                $res->is_success = FALSE;
+                $res->code = 201;
+                $res->message = "주문 아이디를 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            else{
+                $order_id = $_GET["order_id"];
+                //변수 타입 체크
+                if(nl2br(gettype($order_id)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //변수 존재성 체크
+                    if(!isExistOrder($user_id,$order_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "존재하지 않는 주문입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            $res->result = deleteOrder($user_id, $order_id);
+            $res->is_success = TRUE;
+            $res->code = 100;
+            $res->message = "주문이 정상적으로 취소되었습니다.";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 //test sample
