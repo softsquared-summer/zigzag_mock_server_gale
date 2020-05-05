@@ -1191,7 +1191,7 @@ function deleteFavorite($user_id, $mall_id)
 }
 
 //장바구니 추가
-function postBasket($user_id, $item_id, $size,$color,$um)
+function postBasket($user_id, $item_id, $size,$color,$num)
 {
     $pdo = pdoSqlConnect();
     $query = "INSERT INTO Orders (user_id,item_id,size,color,num,is_basket ) VALUES (?,?,?,?,?,'Y');";
@@ -1220,7 +1220,7 @@ function postOrder($user_id, $item_id, $size,$color,$num)
 function getBaskets($user_id)
 {
     $pdo = pdoSqlConnect();
-    $query_num = "select count(id), ' ' as list from Orders
+    $query_num = "select count(id) as num, ' ' as list from Orders
                 where Orders.user_id = ? and Orders.is_deleted = 'N' and Orders.is_purchased = 'N' and Orders.is_basket='Y';";
 
     $st_num = $pdo->prepare($query_num);
@@ -1293,13 +1293,13 @@ where Item.id = ?;";
         $res_body[$i]["image"] = $res_image[0];
     }
 
-    $res_num[0]["list"] = $res_body[0];
+    $res_num[0]["list"] = $res_body;
     $res = $res_num;
 
     $st = null;
     $pdo = null;
 
-    return $res[0];
+    return $res;
 }
 
 //장바구니 삭제
@@ -1477,105 +1477,40 @@ function postAddress($user_id,$name,$phone,$zipcode,$address,$address_detail,$me
     $pdo = null;
 }
 //결제
-function paymentBank($user_id,$item1,$item2,$item3,$item4,$item5)
+function payment($user_id,$item1,$item2,$item3,$item4,$item5)
 {
     $pdo = pdoSqlConnect();
-    $query_order1 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item1.";";
-    $query_completion1 = "INSERT INTO Completion (user_id, order_id1, status) VALUES (?,?,'002');";
-    $query1 = $query_order1.' '.$query_completion1;
 
-    $query_order2 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item2.";";
-    $query_completion2 = "INSERT INTO Completion (order_id2) VALUES (?);";
-    $query2 = $query_order2.' '.$query_completion2;
+    $query1 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item1.";";
+    $query2 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item2.";";
+    $query3 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item3.";";
+    $query4 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item4.";";
+    $query5 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item5.";";
 
-    $query_order3 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item3.";";
-    $query_completion3 = "INSERT INTO Completion (order_id3) VALUES (?);";
-    $query3 = $query_order3.' '.$query_completion3;
-
-    $query_order4 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item4.";";
-    $query_completion4 = "INSERT INTO Completion (order_id4) VALUES (?);";
-    $query4 = $query_order4.' '.$query_completion4;
-
-    $query_order5 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item5.";";
-    $query_completion5 = "INSERT INTO Completion (order_id5) VALUES (?);";
-    $query5 = $query_order5.' '.$query_completion5;
 
     if($item5 != -5){
         $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4.' '.$query5);
-        $st->execute([$user_id,$item1,$item2,$item3,$item4,$item5]);
+        $st->execute([]);
         $st = null;
     }
     else if($item4 != -4){
         $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4);
-        $st->execute([$user_id,$item1,$item2,$item3,$item4]);
+        $st->execute([]);
         $st = null;
     }
     else if($item3 != -3){
         $st = $pdo->prepare($query1.' '.$query2.' '.$query3);
-        $st->execute([$user_id,$item1,$item2,$item3]);
+        $st->execute([]);
         $st = null;
     }
     else if($item2 != -2){
         $st = $pdo->prepare($query1.' '.$query2);
-        $st->execute([$user_id,$item1,$item2]);
+        $st->execute([]);
         $st = null;
     }
     else{
         $st = $pdo->prepare($query1);
-        $st->execute([$user_id,$item1]);
-        $st = null;
-    }
-
-    $pdo = null;
-}
-
-//결제
-function paymentNoneBank($user_id,$item1,$item2,$item3,$item4,$item5)
-{
-    $pdo = pdoSqlConnect();
-    $query_order1 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item1.";";
-    $query_completion1 = "INSERT INTO Completion (user_id, order_id1, status) VALUES (?,?,'002');";
-    $query1 = $query_order1.' '.$query_completion1;
-
-    $query_order2 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item2.";";
-    $query_completion2 = "INSERT INTO Completion (order_id2) VALUES (?);";
-    $query2 = $query_order2.' '.$query_completion2;
-
-    $query_order3 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item3.";";
-    $query_completion3 = "INSERT INTO Completion (order_id3) VALUES (?);";
-    $query3 = $query_order3.' '.$query_completion3;
-
-    $query_order4 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item4.";";
-    $query_completion4 = "INSERT INTO Completion (order_id4) VALUES (?);";
-    $query4 = $query_order4.' '.$query_completion4;
-
-    $query_order5 = "UPDATE Orders SET is_purchased = 'Y', is_basket = 'N' where user_id = ".$user_id." and id = ".$item5.";";
-    $query_completion5 = "INSERT INTO Completion (order_id5) VALUES (?);";
-    $query5 = $query_order5.' '.$query_completion5;
-
-    if($item5 != -5){
-        $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4.' '.$query5);
-        $st->execute([$user_id,$item1,$item2,$item3,$item4,$item5]);
-        $st = null;
-    }
-    else if($item4 != -4){
-        $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4);
-        $st->execute([$user_id,$item1,$item2,$item3,$item4]);
-        $st = null;
-    }
-    else if($item3 != -3){
-        $st = $pdo->prepare($query1.' '.$query2.' '.$query3);
-        $st->execute([$user_id,$item1,$item2,$item3]);
-        $st = null;
-    }
-    else if($item2 != -2){
-        $st = $pdo->prepare($query1.' '.$query2);
-        $st->execute([$user_id,$item1,$item2]);
-        $st = null;
-    }
-    else{
-        $st = $pdo->prepare($query1);
-        $st->execute([$user_id,$item1]);
+        $st->execute([]);
         $st = null;
     }
 
@@ -1586,18 +1521,272 @@ function paymentNoneBank($user_id,$item1,$item2,$item3,$item4,$item5)
 function getOrders($user_id)
 {
     $pdo = pdoSqlConnect();
-    $query = "SELECT * FROM Test WHERE no = ?;";
+    $query_num = "select
+concat(
+        right(cast(year(Orders.update_at) as char),2),
+    '.',
+    if(month(Orders.update_at)<10,
+        concat(0,month(Orders.update_at)),
+        month(Orders.update_at)
+        ),
+    '.',
+    if(day(Orders.update_at)<10,
+        concat(0,day(Orders.update_at)),
+        day(Orders.update_at)
+        )
+    )  as date,
 
-    $st = $pdo->prepare($query);
-    $st->execute([$user_id]);
-    //    $st->execute();
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
+Orders.id as order_id,
+' ' as list
+from Completion
+
+inner join Orders
+on Orders.completion_id = Completion.id
+
+where Orders.user_id = ?;";
+
+    $st_num = $pdo->prepare($query_num);
+    //    $st->execute([$param,$param]);
+    $st_num->execute([$user_id]);
+    $st_num->setFetchMode(PDO::FETCH_ASSOC);
+    $res_num = $st_num->fetchAll();
+
+    $date[] = (Object)Array();
+
+    for($i = 0; $i<count($res_num); $i++){
+        $date[$i] = $res_num[$i]['date'];
+    }
+
+    $query_body = "select
+
+Item.id as item_id,
+
+Mall.name as mall_name,
+
+Item.name as item_name,
+
+' ' as image,
+
+Orders.size as size,
+
+Orders.color as color,
+
+Orders.num as num,
+
+concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price,
+
+Mall.shipment as ship
+
+from Orders
+
+inner join Item
+on Orders.item_id = Item.id
+
+inner join Mall
+on Item.mall_id = Mall.id
+
+inner join Completion
+on Completion.id = Orders.completion_id
+
+where Completion.user_id = ?
+and
+      concat(
+        right(cast(year(Orders.update_at) as char),2),
+    '.',
+    if(month(Orders.update_at)<10,
+        concat(0,month(Orders.update_at)),
+        month(Orders.update_at)
+        ),
+    '.',
+    if(day(Orders.update_at)<10,
+        concat(0,day(Orders.update_at)),
+        day(Orders.update_at)
+        )
+    ) = ?;
+";
+
+    $st_body = $pdo->prepare($query_body);
+    $res_body = (Object)Array();
+
+    for($i = 0; $i<count($res_num); $i++){
+        $st_body->execute([$user_id,$date[$i]]);
+        $st_body->setFetchMode(PDO::FETCH_ASSOC);
+        $res_body = $st_body->fetchAll();
+    }
+
+    $item_id[] = (Object)Array();
+
+    for($i = 0; $i<count($res_body); $i++){
+        $item_id[$i] = $res_body[$i]['item_id'];
+    }
+
+    $query_image = "select
+group_concat(case when item_image.id%2=1 then image_url end) image_url1,
+group_concat(case when item_image.id%2=0 then image_url end) image_url2
+from Item
+
+inner join item_image
+on Item.id = item_image.item_id
+
+where Item.id = ?;";
+
+
+    $st2 = $pdo->prepare($query_image);
+    //    $st->execute([$param,$param]);
+
+    for($i = 0; $i<count($res_body); $i++){
+        $st2->execute([$item_id[$i]]);
+        $st2->setFetchMode(PDO::FETCH_ASSOC);
+        $res_image = $st2->fetchAll();
+        $res_body[$i]["image"] = $res_image[0];
+    }
+
+    for($i = 0; $i<count($res_num);$i++){
+        $res_num[$i]["list"] = $res_body[$i];
+    }
+
+    $res = $res_num;
 
     $st = null;
     $pdo = null;
 
-    return $res[0];
+    return $res;
+}
+
+//주문 완료 조회
+function getOrdersWithItem($user_id,$order_id)
+{
+    $pdo = pdoSqlConnect();
+    $query_num = "select
+concat(
+        right(cast(year(Orders.update_at) as char),2),
+    '.',
+    if(month(Orders.update_at)<10,
+        concat(0,month(Orders.update_at)),
+        month(Orders.update_at)
+        ),
+    '.',
+    if(day(Orders.update_at)<10,
+        concat(0,day(Orders.update_at)),
+        day(Orders.update_at)
+        )
+    )  as date,
+
+Orders.id as order_id,
+' ' as list
+from Completion
+
+inner join Orders
+on Orders.completion_id = Completion.id
+
+where Orders.user_id = ? and Orders.id = ?;";
+
+    $st_num = $pdo->prepare($query_num);
+    //    $st->execute([$param,$param]);
+    $st_num->execute([$user_id,$order_id]);
+    $st_num->setFetchMode(PDO::FETCH_ASSOC);
+    $res_num = $st_num->fetchAll();
+
+    $date[] = (Object)Array();
+
+    for($i = 0; $i<count($res_num); $i++){
+        $date[$i] = $res_num[$i]['date'];
+    }
+
+    $query_body = "select
+
+Item.id as item_id,
+
+Mall.name as mall_name,
+
+Item.name as item_name,
+
+' ' as image,
+
+Orders.size as size,
+
+Orders.color as color,
+
+Orders.num as num,
+
+concat(substr(Item.price,1,2),',',substr(Item.price,-3)) as price,
+
+Mall.shipment as ship
+
+from Orders
+
+inner join Item
+on Orders.item_id = Item.id
+
+inner join Mall
+on Item.mall_id = Mall.id
+
+inner join Completion
+on Completion.id = Orders.completion_id
+
+where Completion.user_id = ? and Orders.id = ?
+and
+      concat(
+        right(cast(year(Orders.update_at) as char),2),
+    '.',
+    if(month(Orders.update_at)<10,
+        concat(0,month(Orders.update_at)),
+        month(Orders.update_at)
+        ),
+    '.',
+    if(day(Orders.update_at)<10,
+        concat(0,day(Orders.update_at)),
+        day(Orders.update_at)
+        )
+    ) = ?;
+";
+
+    $st_body = $pdo->prepare($query_body);
+    $res_body = (Object)Array();
+
+    for($i = 0; $i<count($res_num); $i++){
+        $st_body->execute([$user_id,$order_id,$date[$i]]);
+        $st_body->setFetchMode(PDO::FETCH_ASSOC);
+        $res_body = $st_body->fetchAll();
+    }
+
+    $item_id[] = (Object)Array();
+
+    for($i = 0; $i<count($res_body); $i++){
+        $item_id[$i] = $res_body[$i]['item_id'];
+    }
+
+    $query_image = "select
+group_concat(case when item_image.id%2=1 then image_url end) image_url1,
+group_concat(case when item_image.id%2=0 then image_url end) image_url2
+from Item
+
+inner join item_image
+on Item.id = item_image.item_id
+
+where Item.id = ?;";
+
+
+    $st2 = $pdo->prepare($query_image);
+    //    $st->execute([$param,$param]);
+
+    for($i = 0; $i<count($res_body); $i++){
+        $st2->execute([$item_id[$i]]);
+        $st2->setFetchMode(PDO::FETCH_ASSOC);
+        $res_image = $st2->fetchAll();
+        $res_body[$i]["image"] = $res_image[0];
+    }
+
+    for($i = 0; $i<count($res_body);$i++){
+        $res_num[$i]["list"] = $res_body[$i];
+    }
+
+    $res = $res_num;
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
 }
 //-----------------------조건식--------------------------//
 
@@ -1883,6 +2072,26 @@ function isExistItemOnOrders($user_id,$item_id){
 
     return intval($res[0]["exist"]);
 }
+
+//장바구니에 등록된 아이템이 맞는지
+function isPurchaseItem($user_id,$order_id){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM Orders where Orders.user_id = ? and Orders.id = ?
+                and Orders.is_deleted = 'N' and Orders.is_purchased = 'Y' and Orders.is_basket='N') as exist";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$user_id,$order_id]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
 
 //장바구니에 등록된 아이템이 맞는지
 function isExistOrder($user_id,$item_id){
@@ -2213,6 +2422,115 @@ function EmailToID($email){
     return intval($res[0]["exist"]);
 }
 
+//Completion 테이블에 추가_Bank
+function postCompletionBank($user_id,$item1,$item2,$item3,$item4,$item5)
+{
+    $pdo = pdoSqlConnect();
+
+    $query = "INSERT INTO Completion 
+(user_id, order_id1, order_id2, order_id3, order_id4, order_id5, status)
+ VALUES (?,?,?,?,?,?,'002');";
+
+    if($item2 == -2){
+        $item2 = 0;
+    }
+    else if($item3 == -3){
+        $item3 = 0;
+    }
+    else if($item4 == -4){
+        $item4 = 0;
+    }
+    else if($item5 == -5){
+        $item5 = 0;
+    }
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item1,$item2,$item3,$item4,$item5]);
+    $st = null;
+    $pdo = null;
+}
+
+//Completion 테이블에 추가_NoneBank
+function postCompletionNoneBank($user_id,$item1,$item2,$item3,$item4,$item5)
+{
+    $pdo = pdoSqlConnect();
+
+    $query = "INSERT INTO Completion 
+(user_id, order_id1, order_id2, order_id3, order_id4, order_id5, status)
+ VALUES (?,?,?,?,?,?,'001');";
+
+    if($item2 == -2){
+        $item2 = 0;
+        $item3 = 0;
+        $item4 = 0;
+        $item5 = 0;
+    }
+    else if($item3 == -3){
+        $item3 = 0;
+        $item4 = 0;
+        $item5 = 0;
+    }
+    else if($item4 == -4){
+        $item4 = 0;
+        $item5 = 0;
+    }
+    else if($item5 == -5){
+        $item5 = 0;
+    }
+
+    $st = $pdo->prepare($query);
+    $st->execute([$user_id,$item1,$item2,$item3,$item4,$item5]);
+    $st = null;
+    $pdo = null;
+}
+
+//completion_id 추가
+function postCompletionID($user_id,$item1,$item2,$item3,$item4,$item5){
+    $pdo = pdoSqlConnect();
+    $query_extra = "select Completion.id from Completion order by create_at desc";
+    $st = $pdo->prepare($query_extra);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+    $Completion_id = $res[0]['id'];
+    $st = null;
+
+    $query1 = "UPDATE Orders SET completion_id = ".$Completion_id." where user_id = ".$user_id." and id = ".$item1.";";
+    $query2 = "UPDATE Orders SET completion_id = ".$Completion_id." where user_id = ".$user_id." and id = ".$item2.";";
+    $query3 = "UPDATE Orders SET completion_id = ".$Completion_id." where user_id = ".$user_id." and id = ".$item3.";";
+    $query4 = "UPDATE Orders SET completion_id = ".$Completion_id." where user_id = ".$user_id." and id = ".$item4.";";
+    $query5 = "UPDATE Orders SET completion_id = ".$Completion_id." where user_id = ".$user_id." and id = ".$item5.";";
+
+    if($item5 != -5){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4.' '.$query5);
+        $st->execute([]);
+        $st = null;
+    }
+    else if($item4 != -4){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3.' '.$query4);
+        $st->execute([]);
+        $st = null;
+    }
+    else if($item3 != -3){
+        $st = $pdo->prepare($query1.' '.$query2.' '.$query3);
+        $st->execute([]);
+        $st = null;
+    }
+    else if($item2 != -2){
+        $st = $pdo->prepare($query1.' '.$query2);
+        $st->execute([]);
+        $st = null;
+    }
+    else{
+        $st = $pdo->prepare($query1);
+        $st->execute([]);
+        $st = null;
+    }
+
+    $pdo = null;
+
+}
+
 //세부 카테고리 텍스트 코드로 변환
 function categoryDetailTextToCode($text){
     switch ($text){
@@ -2432,22 +2750,19 @@ function statusToComment($code){
 //    }
 
 //READ
-//function test($text)
-//{
-//    $pdo = pdoSqlConnect();
-//    $query = "SELECT * FROM Item where Item.id = ?;";
-//
-//    $st = $pdo->prepare($query);
-//    //    $st->execute([$param,$param]);
-//    $st->execute($text);
-//    $st->setFetchMode(PDO::FETCH_ASSOC);
-//    $res = $st->fetchAll();
-//
-//    $st = null;
-//    $pdo = null;
-//
-//    return $res;
-//}
+function test()
+{
+    $pdo = pdoSqlConnect();
+    $query_extra = "select Completion.id from Completion order by create_at desc";
+    $st = $pdo->prepare($query_extra);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+    $Completion_id = $res[0]['id'];
+    $st = null;
+
+    return $Completion_id;
+}
 
 //READ
 function testDetail($testNo)

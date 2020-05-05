@@ -647,14 +647,14 @@ try {
                     return;
                 }
                 else{
-                    //변수 존재성 체크
-                    if(!isExistColor($item_id,$item_color)){
-                        $res->is_success = FALSE;
-                        $res->code = 201;
-                        $res->message = "존재하지 않는 색깔입니다.";
-                        echo json_encode($res, JSON_NUMERIC_CHECK);
-                        return;
-                    }
+//                    //변수 존재성 체크
+//                    if(!isExistColor($item_id,$item_color)){
+//                        $res->is_success = FALSE;
+//                        $res->code = 201;
+//                        $res->message = "존재하지 않는 색깔입니다.";
+//                        echo json_encode($res, JSON_NUMERIC_CHECK);
+//                        return;
+//                    }
                 }
             }
 
@@ -677,13 +677,13 @@ try {
                 }
                 else{
                     //변수 존재성 체크
-                    if(!isExistSize($item_id,$item_size)){
-                        $res->is_success = FALSE;
-                        $res->code = 201;
-                        $res->message = "존재하지 않는 사이즈입니다.";
-                        echo json_encode($res, JSON_NUMERIC_CHECK);
-                        return;
-                    }
+//                    if(!isExistSize($item_id,$item_size)){
+//                        $res->is_success = FALSE;
+//                        $res->code = 201;
+//                        $res->message = "존재하지 않는 사이즈입니다.";
+//                        echo json_encode($res, JSON_NUMERIC_CHECK);
+//                        return;
+//                    }
                 }
             }
 
@@ -1740,13 +1740,13 @@ try {
                 }
                 else{
                     //변수 존재성 체크
-                    if(!isExistSize($item_id,$size)){
-                        $res->is_success = FALSE;
-                        $res->code = 201;
-                        $res->message = "존재하지 않는 사이즈입니다.";
-                        echo json_encode($res, JSON_NUMERIC_CHECK);
-                        return;
-                    }
+//                    if(!isExistSize($item_id,$size)){
+//                        $res->is_success = FALSE;
+//                        $res->code = 201;
+//                        $res->message = "존재하지 않는 사이즈입니다.";
+//                        echo json_encode($res, JSON_NUMERIC_CHECK);
+//                        return;
+//                    }
                 }
             }
 
@@ -1769,13 +1769,13 @@ try {
                 }
                 else{
                     //변수 존재성 체크
-                    if(!isExistColor($item_id,$color)){
-                        $res->is_success = FALSE;
-                        $res->code = 201;
-                        $res->message = "존재하지 않는 색깔입니다.";
-                        echo json_encode($res, JSON_NUMERIC_CHECK);
-                        return;
-                    }
+//                    if(!isExistColor($item_id,$color)){
+//                        $res->is_success = FALSE;
+//                        $res->code = 201;
+//                        $res->message = "존재하지 않는 색깔입니다.";
+//                        echo json_encode($res, JSON_NUMERIC_CHECK);
+//                        return;
+//                    }
                 }
             }
 
@@ -1907,13 +1907,13 @@ try {
                 }
                 else{
                     //변수 존재성 체크
-                    if(!isExistSize($item_id,$size)){
-                        $res->is_success = FALSE;
-                        $res->code = 201;
-                        $res->message = "존재하지 않는 사이즈입니다.";
-                        echo json_encode($res, JSON_NUMERIC_CHECK);
-                        return;
-                    }
+//                    if(!isExistSize($item_id,$size)){
+//                        $res->is_success = FALSE;
+//                        $res->code = 201;
+//                        $res->message = "존재하지 않는 사이즈입니다.";
+//                        echo json_encode($res, JSON_NUMERIC_CHECK);
+//                        return;
+//                    }
                 }
             }
 
@@ -1936,13 +1936,13 @@ try {
                 }
                 else{
                     //변수 존재성 체크
-                    if(!isExistColor($item_id,$color)){
-                        $res->is_success = FALSE;
-                        $res->code = 201;
-                        $res->message = "존재하지 않는 색깔입니다.";
-                        echo json_encode($res, JSON_NUMERIC_CHECK);
-                        return;
-                    }
+//                    if(!isExistColor($item_id,$color)){
+//                        $res->is_success = FALSE;
+//                        $res->code = 201;
+//                        $res->message = "존재하지 않는 색깔입니다.";
+//                        echo json_encode($res, JSON_NUMERIC_CHECK);
+//                        return;
+//                    }
                 }
             }
 
@@ -2567,14 +2567,18 @@ try {
                 $type = $_GET["type"];
                 //item 타입 및 존재 여부 체크
                 if($type == "bank"){
-                    $res->result = paymentBank($user_id,$order1,$order2,$order3,$order4,$order5);
+                    $res->result = payment($user_id,$order1,$order2,$order3,$order4,$order5);
+                    $res->result = postCompletionBank($user_id,$order1,$order2,$order3,$order4,$order5);
+                    $res->result = postCompletionID($user_id,$order1,$order2,$order3,$order4,$order5);
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "결제가 완료되었습니다.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     break;
                 }else if($type == "none_bank"){
-                    $res->result = paymentNoneBank($user_id,$order1,$order2,$order3,$order4,$order5);
+                    $res->result = payment ($user_id,$order1,$order2,$order3,$order4,$order5);
+                    $res->result = postCompletionNoneBank($user_id,$order1,$order2,$order3,$order4,$order5);
+                    $res->result = postCompletionID($user_id,$order1,$order2,$order3,$order4,$order5);
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "결제가 완료되었습니다.";
@@ -2589,13 +2593,6 @@ try {
                     return;
                 }
             }
-
-            $res->result = payment($user_id,$order1,$order2,$order3,$order4,$order5);
-            $res->isSuccess = TRUE;
-            $res->code = 100;
-            $res->message = "결제가 완료되었습니다.";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
-            break;
 
         /*
 * API No. 25
@@ -2640,7 +2637,38 @@ try {
                 return;
             }
 
-            $res->result = getOrders($user_id);
+            //쿼리스트링 태그값 가져오기
+            if(empty($_GET["order_id"])){
+                $res->result = getOrders($user_id);
+                $res->is_success = TRUE;
+                $res->code = 100;
+                $res->message = "주문 완료 조회가 완료되었습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else{
+                $item_id = $_GET["order_id"];
+                //쇼핑몰 아이디 타입 체크
+                if(nl2br(gettype($item_id)) != "string"){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "잘못된 타입입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    //쇼핑몰 아이디 존재성 체크
+                    if(!isPurchaseItem($user_id,$item_id)){
+                        $res->is_success = FALSE;
+                        $res->code = 201;
+                        $res->message = "구매하지 않은 아이템입니다.";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                }
+            }
+
+            $res->result = getOrdersWithItem($user_id,$item_id);
             $res->is_success = TRUE;
             $res->code = 100;
             $res->message = "주문 완료 조회가 완료되었습니다.";
@@ -2702,14 +2730,14 @@ try {
 //         * API Name : 테스트 API
 //         * 마지막 수정 날짜 : 19.04.29
 //         */
-//        case "test":
-//            http_response_code(200);
-//            $res->result = isAllDifferent(3,2,3,4,5);
-//            $res->isSuccess = TRUE;
-//            $res->code = 100;
-//            $res->message = "테스트 성공";
-//            echo json_encode($res, JSON_NUMERIC_CHECK);
-//            break;
+        case "test":
+            http_response_code(200);
+            $res->result = test();
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "테스트 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
 //        /*
 //         * API No. 0
 //         * API Name : 테스트 Path Variable API
