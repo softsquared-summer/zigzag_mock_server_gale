@@ -255,7 +255,7 @@ try {
                 return;
             }else{
                 //존재하는 아이템 아이디인지 확인
-                if(!isExistItemOnComment($item_id)){
+                if(!isExistItem($item_id)){
                     $res->is_success = FALSE;
                     $res->code = 201;
                     $res->message = "존재하지 않는 아이디입니다.";

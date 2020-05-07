@@ -103,7 +103,7 @@ where Tag.id = ?
 }
 
 //페이지 오버되었는지 확인
-function isBasektOverPage($user_id,$page){
+function isBasketOverPage($user_id,$page){
 
     $pdo = pdoSqlConnect();
     $query = "

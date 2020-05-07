@@ -1,22 +1,6 @@
 <?php
 
 // ------------------------보조 함수------------------------------
-//장바구니 리셋
-function order_reset(){
-
-    $pdo = pdoSqlConnect();
-
-    $query = "UPDATE Orders SET status=999 where status=-999;";
-    $st = $pdo->prepare($query);
-    //    $st->execute([$param,$param]);
-    $st->execute([]);
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-
-    $st=null;
-    $pdo = null;
-
-    return;
-}
 
 //삭제 유저 재가입 함수
 function recreateUser($email){

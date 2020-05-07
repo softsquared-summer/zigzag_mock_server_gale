@@ -67,6 +67,20 @@ try {
                 return;
             }
 
+            if(empty($_GET["page"])){
+                $page = 1;
+            }
+            else{
+                $page = $_GET["page"];
+                if(isOverPage("Mall",$_GET["page"])){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "초과된 페이지입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
             //쿼리스트링 태그값 가져오기
             if(empty($_GET["tag_id"])){
                 $res->result = getMalls($user_id,$page);
@@ -95,31 +109,28 @@ try {
                         echo json_encode($res, JSON_NUMERIC_CHECK);
                         return;
                     }
+                    else{
+                        if(isMallOverPage($tag_id,$page)){
+                            $res->is_success = FALSE;
+                            $res->code = 201;
+                            $res->message = "초과된 페이지입니다.";
+                            echo json_encode($res, JSON_NUMERIC_CHECK);
+                            return;
+                        }
+                        else{
+                            $res->result = getMallsWithTag($user_id,$tag_id,$page);
+                            $res->is_success = TRUE;
+                            $res->code = 100;
+                            $res->message = "쇼핑몰 리스트 조회가 완료되었습니다.";
+                            echo json_encode($res, JSON_NUMERIC_CHECK);
+                            break;
+                        }
+                    }
                 }
             }
 
-            if(empty($_GET["page"])){
-                $page = 1;
-            }
-            else{
-                if(isMallOverPage($tag_id,$_GET["page"])){
-                    $res->is_success = FALSE;
-                    $res->code = 201;
-                    $res->message = "초과된 페이지입니다.";
-                    echo json_encode($res, JSON_NUMERIC_CHECK);
-                    return;
-                }
-                else{
-                    $page = $_GET["page"];
-                }
-            }
 
-            $res->result = getMallsWithTag($user_id,$tag_id,$page);
-            $res->is_success = TRUE;
-            $res->code = 100;
-            $res->message = "쇼핑몰 리스트 조회가 완료되었습니다.";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
-            break;
+
 
         /*
      * API No. 13

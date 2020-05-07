@@ -396,7 +396,7 @@ try {
                 $page = 1;
             }
             else{
-                if(isBasektOverPage($user_id,$_GET["page"])){
+                if(isBasketOverPage($user_id,$_GET["page"])){
                     $res->is_success = FALSE;
                     $res->code = 201;
                     $res->message = "초과된 페이지입니다.";
