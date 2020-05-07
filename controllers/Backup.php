@@ -159,15 +159,15 @@ try {
                 }
             }
 
-            $filter_input = "order by rand();"; //filter가 low면 저가순, high면 고가순, 없으면 랜덤, 그 외에는 접근 금지
+            $filter_input = "order by Item.id desc"; //filter가 low면 저가순, high면 고가순, 없으면 랜덤, 그 외에는 접근 금지
             if(empty($_GET["filter"])){
-                $filter_input == "order by rand();";
+                $filter_input == "order by Item.id desc";
             }
             else if($_GET["filter"] == "low"){
-                $filter_input = "order by price asc;";
+                $filter_input = "order by price asc";
             }
             else if($_GET["filter"] == "high"){
-                $filter_input = "order by price desc;";
+                $filter_input = "order by price desc";
             }
             else{
                 $res->is_success = FALSE;
@@ -177,7 +177,24 @@ try {
                 return;
             }
 
-            $res->result = getItems($user_id, $keyword_input, $category_input, $ship_input, $filter_input);
+            if(empty($_GET["page"])){
+                $page = 1;
+            }
+            else{
+                if(isOverPage("Item",$_GET["page"])){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "초과된 페이지입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    $page = $_GET["page"];
+                }
+            }
+
+
+            $res->result = getItems($user_id, $keyword_input, $category_input, $ship_input, $filter_input,$page);
             $res->is_success = TRUE;
             $res->code = 100;
             $res->message = "아이템 리스트 조회가 완료되었습니다.";
@@ -527,10 +544,26 @@ try {
                 }
             }
 
+            if(empty($_GET["page"])){
+                $page = 1;
+            }
+            else{
+                if(isOverPage("Comment",$_GET["page"])){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "초과된 페이지입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    $page = $_GET["page"];
+                }
+            }
+
 
             if(empty($_GET["user_id"])){
                 //리뷰 리스트 전체 조회
-                $res->result = getItemComments($item_id);
+                $res->result = getItemComments($item_id,$page);
                 $res->isSuccess = TRUE;
                 $res->code = 100;
                 $res->message = "아이템 리뷰 조회가 완료되었습니다.";
@@ -540,7 +573,7 @@ try {
             else{
                 if($_GET["user_id"] == $user_id){
                     //자신이 쓴 리뷰 리스트 조회
-                    $res->result = getItemCommentsMyself($user_id,$item_id);
+                    $res->result = getItemCommentsMyself($user_id,$item_id,$page);
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "회원님이 쓰신 리뷰 조회가 완료되었습니다.";
@@ -945,9 +978,25 @@ try {
                 return;
             }
 
+            if(empty($_GET["page"])){
+                $page = 1;
+            }
+            else{
+                if(isOverPage("Mall",$_GET["page"])){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "초과된 페이지입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    $page = $_GET["page"];
+                }
+            }
+
             //쿼리스트링 태그값 가져오기
             if(empty($_GET["tag_id"])){
-                $res->result = getMalls($user_id);
+                $res->result = getMalls($user_id,$page);
                 $res->is_success = TRUE;
                 $res->code = 100;
                 $res->message = "쇼핑몰 리스트 조회가 완료되었습니다.";
@@ -975,7 +1024,8 @@ try {
                     }
                 }
             }
-            $res->result = getMallsWithTag($user_id,$tag_id);
+
+            $res->result = getMallsWithTag($user_id,$tag_id,$page);
             $res->is_success = TRUE;
             $res->code = 100;
             $res->message = "쇼핑몰 리스트 조회가 완료되었습니다.";
@@ -1245,7 +1295,23 @@ try {
                 return;
             }
 
-            $res->result = getTag($user_id);
+            if(empty($_GET["page"])){
+                $page = 1;
+            }
+            else{
+                if(isOverPage("Tag",$_GET["page"])){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "초과된 페이지입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    $page = $_GET["page"];
+                }
+            }
+
+            $res->result = getTag($user_id,$page);
             $res->is_success = TRUE;
             $res->code = 100;
             $res->message = "최근 사용한 태그 내역입니다.";
@@ -1487,10 +1553,26 @@ try {
                 return;
             }
 
-            $res->result = getHearts($user_id);
+            if(empty($_GET["page"])){
+                $page = 1;
+            }
+            else{
+                if(isOverPage("Heart",$_GET["page"])){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "초과된 페이지입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    $page = $_GET["page"];
+                }
+            }
+
+            $res->result = getHearts($user_id,$page);
             $res->is_success = TRUE;
             $res->code = 100;
-            $res->message = "찜한 아이템 개수 조회가 완료되었습니다.";
+            $res->message = "찜한 아이템 조회가 완료되었습니다.";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
@@ -1641,10 +1723,26 @@ try {
                 return;
             }
 
-            $res->result = getFavorites($user_id);
+            if(empty($_GET["page"])){
+                $page = 1;
+            }
+            else{
+                if(isOverPage("Favorite",$_GET["page"])){
+                    $res->is_success = FALSE;
+                    $res->code = 201;
+                    $res->message = "초과된 페이지입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+                else{
+                    $page = $_GET["page"];
+                }
+            }
+
+            $res->result = getFavorites($user_id,$page);
             $res->is_success = TRUE;
             $res->code = 100;
-            $res->message = "찜한 아이템 개수 조회가 완료되었습니다.";
+            $res->message = "즐겨찾기 쇼핑몰 조회가 완료되었습니다.";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
@@ -2665,8 +2763,6 @@ try {
                 //item 타입 및 존재 여부 체크
                 if($type == "bank"){
                     $res->result = payment($user_id,$order1,$order2,$order3,$order4,$order5);
-                    $res->result = postCompletionBank($user_id,$order1,$order2,$order3,$order4,$order5);
-                    $res->result = postCompletionID($user_id,$order1,$order2,$order3,$order4,$order5);
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "결제가 완료되었습니다.";
@@ -2674,8 +2770,6 @@ try {
                     break;
                 }else if($type == "none_bank"){
                     $res->result = payment ($user_id,$order1,$order2,$order3,$order4,$order5);
-                    $res->result = postCompletionNoneBank($user_id,$order1,$order2,$order3,$order4,$order5);
-                    $res->result = postCompletionID($user_id,$order1,$order2,$order3,$order4,$order5);
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "결제가 완료되었습니다.";

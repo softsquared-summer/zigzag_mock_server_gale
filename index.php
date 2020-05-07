@@ -1,6 +1,17 @@
 <?php
+//Pdo & vendor requirement
 require './pdos/DatabasePdo.php';
-require './pdos/IndexPdo.php';
+require './pdos/TagPdo.php';
+require './pdos/CommentPdo.php';
+require './pdos/ConditionPdo.php';
+require './pdos/FavoritePdo.php';
+require './pdos/HeartPdo.php';
+require './pdos/ItemPdo.php';
+require './pdos/MainPdo.php';
+require './pdos/MallPdo.php';
+require './pdos/OrderPdo.php';
+require './pdos/OrderFinishPdo.php';
+require './pdos/SubFuctionPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -27,88 +38,102 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     //4. Order 리셋 API
     $r->addRoute('DELETE', '/reset', ['MainController', 'reset']);
 
-    /* ******************   IndexController   ****************** */
+    /* ******************   ItemController   ****************** */
 
     //1. 아이템 리스트 조회 API
-    $r->addRoute('GET', '/items', ['IndexController', 'getItems']);
+    $r->addRoute('GET', '/items', ['ItemController', 'getItems']);
 
     //2. 아이템 상세 조회 API
-    $r->addRoute('GET', '/items/{itemID}', ['IndexController', 'getItemDetail']);
+    $r->addRoute('GET', '/items/{itemID}', ['ItemController', 'getItemDetail']);
 
     //3. 아이템 색깔 조회 API
-    $r->addRoute('GET', '/items/{itemID}/colors', ['IndexController', 'getItemColors']);
+    $r->addRoute('GET', '/items/{itemID}/colors', ['ItemController', 'getItemColors']);
 
     //4. 아이템 사이즈 조회 API
-    $r->addRoute('GET', '/items/{itemID}/sizes', ['IndexController', 'getItemSizes']);
+    $r->addRoute('GET', '/items/{itemID}/sizes', ['ItemController', 'getItemSizes']);
+
+    /* ******************   CommentController   ****************** */
 
     //5. 아이템 리뷰 총평 조회 API
-    $r->addRoute('GET', '/items/{itemID}/summary', ['IndexController', 'getItemSummary']);
+    $r->addRoute('GET', '/items/{itemID}/summary', ['CommentController', 'getItemSummary']);
 
     //6. 아이템 리뷰 리스트 조회 API
-    $r->addRoute('GET', '/items/{itemID}/comments', ['IndexController', 'getItemComments']);
+    $r->addRoute('GET', '/items/{itemID}/comments', ['CommentController', 'getItemComments']);
 
     //7. 아이템 리뷰 작성 API
-    $r->addRoute('POST', '/comment', ['IndexController', 'postComment']);
+    $r->addRoute('POST', '/comment', ['CommentController', 'postComment']);
 
     //8. 아이템 리뷰 삭제 API
-    $r->addRoute('DELETE', '/comment', ['IndexController', 'deleteComment']);
+    $r->addRoute('DELETE', '/comment', ['CommentController', 'deleteComment']);
+
+    /* ******************   MallController   ****************** */
 
     //9. 쇼핑몰 리스트 조회 API
-    $r->addRoute('GET', '/malls', ['IndexController', 'getMalls']);
+    $r->addRoute('GET', '/malls', ['MallController', 'getMalls']);
 
     //10. 쇼핑몰 상세 조회 API
-    $r->addRoute('GET', '/malls/{mallID}', ['IndexController', 'getMallDetail']);
+    $r->addRoute('GET', '/malls/{mallID}', ['MallController', 'getMallDetail']);
+
+    /* ******************   TagController   ****************** */
 
     //11. 쇼핑몰 태그 설정 API
-    $r->addRoute('POST', '/tag', ['IndexController', 'postTag']);
+    $r->addRoute('POST', '/tag', ['TagController', 'postTag']);
 
     //12. 최근 사용한 태그 리스트 조회 API
-    $r->addRoute('GET', '/tags-recent', ['IndexController', 'getTagRecent']);
+    $r->addRoute('GET', '/tags-recent', ['TagController', 'getTagRecent']);
 
     //13. 태그 리스트 조회 API
-    $r->addRoute('GET', '/tags', ['IndexController', 'getTag']);
+    $r->addRoute('GET', '/tags', ['TagController', 'getTag']);
 
     //14. 태그 삭제 API
-    $r->addRoute('DELETE', '/tags', ['IndexController', 'deleteTag']);
+    $r->addRoute('DELETE', '/tags', ['TagController', 'deleteTag']);
+
+    /* ******************   HeartController   ****************** */
 
     //15. 찜하기 API
-    $r->addRoute('POST', '/heart', ['IndexController', 'postHeart']);
+    $r->addRoute('POST', '/heart', ['HeartController', 'postHeart']);
 
     //16. 찜한 아이템 개수 조회하기 API
-    $r->addRoute('GET', '/hearts', ['IndexController', 'getHearts']);
+    $r->addRoute('GET', '/hearts', ['HeartController', 'getHearts']);
+
+    /* ******************   FavoriteController   ****************** */
 
     //17. 즐겨찾기하기 API
-    $r->addRoute('POST', '/favorite', ['IndexController', 'postFavorite']);
+    $r->addRoute('POST', '/favorite', ['FavoriteController', 'postFavorite']);
 
     //18. 즐겨찾기한 쇼핑몰 개수 조회하기 API
-    $r->addRoute('GET', '/favorites', ['IndexController', 'getHearts']);
+    $r->addRoute('GET', '/favorites', ['FavoriteController', 'getFavorites']);
+
+    /* ******************   OrderController   ****************** */
 
     //19. 장바구니 추가 API
-    $r->addRoute('POST', '/basket', ['IndexController', 'postBasket']);
+    $r->addRoute('POST', '/basket', ['OrderController', 'postBasket']);
 
     //19-1. 직접구매 API
-    $r->addRoute('POST', '/order', ['IndexController', 'postOrder']);
+    $r->addRoute('POST', '/order', ['OrderController', 'postOrder']);
 
     //20. 장바구니 아이템 리스트 조회 API
-    $r->addRoute('GET', '/baskets', ['IndexController', 'getBaskets']);
+    $r->addRoute('GET', '/baskets', ['OrderController', 'getBaskets']);
 
     //21. 장바구니 아이템 삭제 API
-    $r->addRoute('DELETE', '/basket', ['IndexController', 'deleteBaskets']);
+    $r->addRoute('DELETE', '/basket', ['OrderController', 'deleteBaskets']);
 
     //22. 결제 총액 계산 API
-    $r->addRoute('GET', '/totalpay', ['IndexController', 'totalPay']);
+    $r->addRoute('GET', '/totalpay', ['OrderController', 'totalPay']);
 
     //23. 배송지 설정 API
-    $r->addRoute('POST', '/address', ['IndexController', 'postAddress']);
+    $r->addRoute('POST', '/address', ['OrderController', 'postAddress']);
 
     //24. 주문 동의 확인 및 결제 API
-    $r->addRoute('POST', '/payment', ['IndexController', 'payment']);
+    $r->addRoute('POST', '/payment', ['OrderController', 'payment']);
+
+    /* ******************   OrderFinishController   ****************** */
 
     //25. 주문 완료 리스트 조회 API
-    $r->addRoute('GET', '/orders', ['IndexController', 'getOrders']);
+    $r->addRoute('GET', '/orders', ['OrderFinishController', 'getOrders']);
 
     //26. 주문 완료 상세 조회 API
-    $r->addRoute('GET', '/orders/{orderID}', ['IndexController', 'getOrderDetail']);
+    $r->addRoute('GET', '/orders/{orderID}', ['OrderFinishController', 'getOrderDetail']);
 
 //    //27. 주문 취소 API
 //    $r->addRoute('DELETE', '/order', ['IndexController', 'deleteOrder']);
@@ -169,15 +194,50 @@ switch ($routeInfo[0]) {
         $vars = $routeInfo[2];
 
         switch ($routeInfo[1][0]) {
-            case 'IndexController':
-                $handler = $routeInfo[1][1];
-                $vars = $routeInfo[2];
-                require './controllers/IndexController.php';
-                break;
             case 'MainController':
                 $handler = $routeInfo[1][1];
                 $vars = $routeInfo[2];
                 require './controllers/MainController.php';
+                break;
+            case 'CommentController':
+                $handler = $routeInfo[1][1];
+                $vars = $routeInfo[2];
+                require './controllers/CommentController.php';
+                break;
+            case 'ItemController':
+                $handler = $routeInfo[1][1];
+                $vars = $routeInfo[2];
+                require './controllers/ItemController.php';
+                break;
+            case 'MallController':
+                $handler = $routeInfo[1][1];
+                $vars = $routeInfo[2];
+                require './controllers/MallController.php';
+                break;
+            case 'TagController':
+                $handler = $routeInfo[1][1];
+                $vars = $routeInfo[2];
+                require './controllers/TagController.php';
+                break;
+            case 'HeartController':
+                $handler = $routeInfo[1][1];
+                $vars = $routeInfo[2];
+                require './controllers/HeartController.php';
+                break;
+            case 'FavoriteController':
+                $handler = $routeInfo[1][1];
+                $vars = $routeInfo[2];
+                require './controllers/FavoriteController.php';
+                break;
+            case 'OrderController':
+                $handler = $routeInfo[1][1];
+                $vars = $routeInfo[2];
+                require './controllers/OrderController.php';
+                break;
+            case 'OrderFinishController':
+                $handler = $routeInfo[1][1];
+                $vars = $routeInfo[2];
+                require './controllers/OrderFinishController.php';
                 break;
             /*case 'EventController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
