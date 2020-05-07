@@ -99,8 +99,8 @@ order by mall_rank asc";
     )
     mall_rank WHERE num > b.num
 ) AS mall_rank,
-ifnull(Tag.id ,'없음') as tags,
-ifnull(Tag.name ,'없음') as name
+ifnull(Tag.id ,'없음') as tag_id,
+ifnull(Tag.name ,'없음') as tag_name
 
 from (
     select
@@ -157,6 +157,7 @@ order by mall_rank asc";
     $res_tag = $st2->fetchAll();
 
     for($i = 0;$i<count($res_body);$i++){
+        unset($res_tag[$i]["mall_rank"]);
         $res_body[$i]["tags"] = $res_tag[$i];
     }
 
@@ -271,8 +272,8 @@ order by mall_rank asc";
     )
     mall_rank WHERE num > b.num
 ) AS mall_rank,
-ifnull(Tag.id ,'없음') as tags,
-ifnull(Tag.name ,'없음') as name
+ifnull(Tag.id ,'없음') as tag_id,
+ifnull(Tag.name ,'없음') as tag_name
 
 from (
     select
@@ -331,6 +332,7 @@ order by mall_rank asc";
     $res_tag = $st2->fetchAll();
 
     for($i = 0;$i<count($res_body);$i++){
+        unset($res_tag[$i]["mall_rank"]);
         $res_body[$i]["tags"] = $res_tag[$i];
     }
 

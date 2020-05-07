@@ -14,8 +14,6 @@ item_category.category_code as item_category,
 
 item_category.category_detail_code as item_category_detail,
 
-' ' as image,
-
 if(
     Mall.shipment = 0,
     'Y',
@@ -111,8 +109,6 @@ function getItemDetail($user_id, $item_id){
 Item.id as id,
 
 Mall.name as mall_name,
-
-' ' as image,
 
 Item.name as item_name,
 
