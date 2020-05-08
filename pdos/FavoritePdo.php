@@ -50,48 +50,7 @@ where Favorite.user_id = ?
         $st_body->setFetchMode(PDO::FETCH_ASSOC);
         $res_body = $st_body->fetchAll();
 
-        $query_image = "
-select
-
-item_image.image_url1 as image_url1,
-item_image.image_url2 as image_url2
-
-from Item
-
-inner join (
-    select
-    group_concat(case when item_image.id%2=1 then image_url end) image_url1,
-    group_concat(case when item_image.id%2=0 then image_url end) image_url2,
-    item_id as id
-    from item_image
-    group by item_id
-    )item_image
-on Item.id = item_image.id
-
-left join Mall
-on Item.mall_id = Mall.id
-
-inner join item_category
-on item_category.id = Item.id
-
-left join Favorite
-on Favorite.mall_id = Favorite.id
-
-left join User
-on User.id = Favorite.user_id
-
-where Favorite.user_id = ?";
-
-
-        $st2 = $pdo->prepare($query_image." limit ".(($page-1)*6).", 6;");
-        //    $st->execute([$param,$param]);
-
-        $st2->execute([$user_id]);
-        $st2->setFetchMode(PDO::FETCH_ASSOC);
-        $res_image = $st2->fetchAll();
-
         for($i=0;$i<count($res_body);$i++){
-            $res_body[$i]["image"] = $res_image;
             $res_num[$i]["list"] = $res_body[$i];
         }
 

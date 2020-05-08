@@ -74,7 +74,7 @@ group by Mall.id
     ) mall_rank
 on mall_rank.mall_id = Mall.id
 
-order by mall_rank asc";
+order by mall_rank, Mall.id asc";
 
     $st = $pdo->prepare($query." limit ".(($page-1)*6).", 6;");
     //    $st->execute([$param,$param]);
@@ -147,7 +147,7 @@ on mall_rank.mall_id = Mall.id
 left join Tag
     on Tag.mall_id = Mall.id
 
-order by mall_rank asc";
+order by mall_rank,Mall.id asc";
 
 
     $st2 = $pdo->prepare($query_tag." limit ".(($page-1)*6).", 6;");
@@ -247,7 +247,7 @@ on Tag.mall_id = Mall.id
 
 where Tag.id = ?
 
-order by mall_rank asc";
+order by mall_rank, Mall.id asc";
 
     $st = $pdo->prepare($query." limit ".(($page-1)*6).", 6;");
     //    $st->execute([$param,$param]);
@@ -322,7 +322,7 @@ left join Tag
     
 where Tag.id = ?
 
-order by mall_rank asc";
+order by mall_rank, Mall.id asc";
 
 
     $st2 = $pdo->prepare($query_tag." limit ".(($page-1)*6).", 6;");
