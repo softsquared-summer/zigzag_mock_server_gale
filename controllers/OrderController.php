@@ -86,10 +86,10 @@ try {
                 }
                 else{
                     //변수 존재성 체크
-                    if(isExistItemOnOrders($user_id,$item_id)){
+                    if(!isExistItem($item_id)){
                         $res->is_success = FALSE;
                         $res->code = 201;
-                        $res->message = "이미 존재하는 아이디입니다.";
+                        $res->message = "존재하지 않는 아이디입니다.";
                         echo json_encode($res, JSON_NUMERIC_CHECK);
                         return;
                     }
@@ -910,7 +910,7 @@ try {
             }
 
             //아이템 선택 하나도 안 되어있을 시 결제 막기
-            if(empty($req->order_id1)){
+            if(empty($req->item_id1)){
                 $res->is_success = FALSE;
                 $res->code = 201;
                 $res->message = "구매할 아이템을 선택해주세요.";
@@ -918,7 +918,7 @@ try {
                 return;
             }
             else{
-                $order1 = $req->order_id1;
+                $order1 = $req->item_id1;
                 //item 타입 및 존재 여부 체크
                 if(nl2br(gettype($order1)) != "integer"){
                     $res->is_success = FALSE;
@@ -939,7 +939,7 @@ try {
             }
 
             //나머지 아이템은 빈칸일 시 공백으로 넘기기
-            if(empty($req->order_id2)){$order2 = -2;}
+            if(empty($req->item_id2)){$order2 = -2;}
             else{
                 $order2 = $req->order_id2;
                 //item 타입 및 존재 여부 체크
@@ -961,7 +961,7 @@ try {
                 }
             }
 
-            if(empty($req->order_id3)){$order3 = -3;}
+            if(empty($req->item_id3)){$order3 = -3;}
             else{
                 $order3 = $req->order_id3;
                 //item 타입 및 존재 여부 체크
@@ -983,7 +983,7 @@ try {
                 }
             }
 
-            if(empty($req->order_id4)){$order4 = -4;}
+            if(empty($req->item_id4)){$order4 = -4;}
             else{
                 $order4 = $req->order_id4;
                 //item 타입 및 존재 여부 체크
@@ -1005,7 +1005,7 @@ try {
                 }
             }
 
-            if(empty($req->order_id5)){$order5 = -5;}
+            if(empty($req->item_id5)){$order5 = -5;}
             else{
                 $order5 = $req->order_id5;
                 //item 타입 및 존재 여부 체크

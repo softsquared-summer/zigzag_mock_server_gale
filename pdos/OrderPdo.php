@@ -111,7 +111,7 @@ where Orders.user_id = ? and Orders.status=000
 
     for($i=0;$i<count($res_body);$i++){
         $res_body[$i]["image"] = $res_image[$i];
-        $res_num[$i]["list"] = $res_body[$i];
+        $res_num[0]["list"] = $res_body;
     }
 
     $res = $res_num;

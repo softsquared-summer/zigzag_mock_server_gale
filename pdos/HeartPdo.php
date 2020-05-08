@@ -132,7 +132,7 @@ where Heart.user_id = ?";
 
     for($i=0;$i<count($res_body);$i++){
         $res_body[$i]["image"] = $res_image[$i];
-        $res_num[$i]["list"] = $res_body[$i];
+        $res_num["list"][] = $res_body[$i];
     }
 
     $res = $res_num;
